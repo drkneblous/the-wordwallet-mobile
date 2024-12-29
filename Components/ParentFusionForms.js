@@ -1,87 +1,228 @@
-import React, { useState, useEffect } from 'react';
+const deepEqual = (a, b) => {
+    if (a === b) return true;
+    if (typeof a !== "object" || typeof b !== "object" || a == null || b == null) {
+        return false;
+    }
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length) return false;
+    for (const key of keysA) {
+        if (!keysB.includes(key) || !deepEqual(a[key], b[key])) {
+            return false;
+        }
+    }
+    return true;
+};
+
+import React, { useState, useEffect, useRef } from 'react';
 import { useStorage } from './StorageContext';
-import { View, Text, Button, Alert } from 'react-native';
+import { View, Text, Button, Alert, TouchableOpacity } from 'react-native';
 import FusionDefinition from './FusionDefinition';
 import FusionList from './FusionList';
 import DeviceDropdown from './DeviceDropdown';
+import NotesDropdown from './NotesDropdown';
 import FusionInput from './FusionInput';
 import DeviceBackButton from './DeviceBackButton';
 import DeviceQuill from './DeviceQuill';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNotes } from './NotesContext'; // Import the context hook
 
 function ParentFusionForms({ onBack }) {
     const [newFusion, setNewFusion] = useState('');
     const [selectedOption, setSelectedOption] = useState('Create');
+    const [notesOption, setNotesOption] = useState('Null');
     const [displayMode, setDisplayMode] = useState('List');
     const [editingIndex, setEditingIndex] = useState(-1);
     const [tempTerm, setTempTerm] = useState('');
-    const [editorContent, setEditorContent] = useState(''); // Rich editor content for Fusion Forms
-    const { loadStoredData, saveData } = useStorage(); // Updated destructure for storage
-    const classIdentifier = 'fusionFormsData'; // Unique identifier for this component
+    const [editorContent, setEditorContent] = useState('');
+    const { loadStoredData, saveData } = useStorage();
+    const classIdentifier = 'fusionFormsData';
     const [fusions, setFusions] = useState([]);
+    const [lastSavedFusions, setLastSavedFusions] = useState([]);
+    const lastSavedFusionsRef = useRef([]);
 
-    useEffect(() => {
-        loadStoredData(classIdentifier).then((data) => {
-            setFusions(data); // Initialize fusions state
-        });
-    }, [classIdentifier]);
-
-    // Save data whenever fusions are updated
-    const [lastSavedFusions, setLastSavedFusions] = useState(null); // Track the last saved state
-
-    useEffect(() => {
-        if (fusions.length > 0 && JSON.stringify(fusions) !== JSON.stringify(lastSavedFusions)) {
-            saveData(classIdentifier, fusions); // Save only if fusions have changed
-            setLastSavedFusions(fusions); // Update the last saved state
+    const hasFusionChanged = () => {
+        if (fusions.length !== lastSavedFusionsRef.current.length) {
+            return true;
         }
-    }, [fusions, saveData, classIdentifier, lastSavedFusions]);
+        for (let i = 0; i < fusions.length; i++) {
+            if (!deepEqual(fusions[i], lastSavedFusionsRef.current[i])) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    useEffect(() => {
+        console.log("ParentFusionForms component mounted");
+
+        const loadFusions = async () => {
+            try {
+                console.log("Attempting to retrieve data from AsyncStorage...");
+                const storedData = await AsyncStorage.getItem(classIdentifier);
+                console.log("Data retrieved from AsyncStorage:", storedData);
+                if (storedData) {
+                    const parsedData = JSON.parse(storedData);
+                    if (Array.isArray(parsedData)) {
+                        setFusions(parsedData);
+                        console.log("State initialized with fusions:", parsedData);
+                    } else {
+                        console.error("Invalid data format retrieved:", parsedData);
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading data from AsyncStorage:", error);
+            }
+        };
+
+        loadFusions();
+
+        return () => console.log("ParentFusionForms component unmounted");
+    }, []);
+
+    useEffect(() => {
+        if (!fusions) {
+            console.warn('Fusions is null or undefined, skipping save logic.');
+            return;
+        }
+
+        if (hasFusionChanged()) {
+            console.log('Detected changes in fusions. Preparing to save...');
+            saveData(classIdentifier, fusions)
+                .then(() => {
+                    console.log('Fusions auto-saved successfully:', fusions);
+                    lastSavedFusionsRef.current = [...fusions];
+                    setLastSavedFusions([...fusions]);
+                })
+                .catch((err) => console.error('Error during auto-save:', err));
+        } else {
+            console.log('No changes detected in fusions, skipping save.');
+        }
+    }, [fusions, saveData, classIdentifier]);
+
+    // Load editor content when displayMode changes to Notes
+    useEffect(() => {
+        if (displayMode === 'Notes') {
+            loadStoredData('IronyNotes')
+                .then((data) => {
+                    setEditorContent(data || '');
+                    console.log('Data loaded for IronyNotes:', data);
+                })
+                .catch((err) => console.error('Error loading IronyNotes:', err));
+        }
+    }, [displayMode, loadStoredData]);
+
+    useEffect(() => {
+        console.log('Fusions state updated:', fusions);
+    }, [fusions]);
 
     const onDelete = (id) => {
-        setFusions((prevFusions) => prevFusions.filter((fusion) => fusion.id !== id));
+        setFusions((prevFusions) => {
+            const updatedFusions = prevFusions.filter((fusion) => fusion.id !== id);
+            console.log('Deleted fusion with ID:', id, 'Updated fusions:', updatedFusions);
+            return updatedFusions;
+        });
     };
 
     const onEditSave = (id) => {
-        setFusions((prevFusions) =>
-            prevFusions.map((fusion) =>
+        setFusions((prevFusions) => {
+            const updatedFusions = prevFusions.map((fusion) =>
                 fusion.id === id ? { ...fusion, text: tempTerm } : fusion
-            )
-        );
+            );
+            console.log('Saved edits for fusion with ID:', id, 'Updated fusions:', updatedFusions);
+            return updatedFusions;
+        });
         setEditingIndex(-1);
         setTempTerm('');
     };
 
     const handleAddFusion = () => {
         if (newFusion.trim()) {
-            const newFusionEntry = { 
+            const newFusionEntry = {
                 id: Date.now().toString(),
-                text: newFusion, // Ensure 'text' field is correctly set
-                style: { color: selectedOption === 'Common' ? '#ff6347' : selectedOption === 'Discovered' ? "#2096F3" : '#8a47ff' },
+                text: newFusion,
+                style: {
+                    color:
+                        selectedOption === 'Common'
+                            ? '#ff6347'
+                            : selectedOption === 'Discovered'
+                            ? '#2096F3'
+                            : '#8a47ff',
+                },
                 category: selectedOption,
-                type: 'fusion' 
+                type: 'fusion',
             };
-            setFusions((prevFusions) => [...prevFusions, newFusionEntry]);
+            setFusions((prevFusions) => {
+                const updatedFusions = [...prevFusions, newFusionEntry];
+                console.log('Added new fusion:', newFusionEntry, 'Updated fusions:', updatedFusions);
+                return updatedFusions;
+            });
             setNewFusion('');
         }
     };
 
-    const handleDropdownChange = (value) => {
-        setSelectedOption(value);
-        setDisplayMode(value === 'Notes' ? 'Notes' : 'List');
+    const handleStateChange = () => {
+        console.log('Switching to Notes mode...');
+
+        // Resetting necessary states when entering Notes
+        setNotesOption('Null'); // Or your desired default
+        setDisplayMode('Notes');
+    };
+
+    const handleDropdownChange = (value, dropdownType) => {
+        console.log(`${dropdownType} Dropdown changed to:`, value);
+
+        if (dropdownType === "Notes") {
+            setNotesOption(value);
+
+            if (value !== "Null" && displayMode === "Notes") {
+                setTimeout(() => {
+                    setDisplayMode("List");
+                    setSelectedOption(value);
+                    console.log(
+                        "Reverting to List mode and syncing selectedOption with NotesDropdown selection:",
+                        value
+                    );
+                }, 100);
+            }
+        } else if (dropdownType === "Device") {
+            setSelectedOption(value);
+
+            if (displayMode === "Notes") {
+                setTimeout(() => {
+                    setNotesOption(value);
+                    console.log(
+                        "Syncing NotesDropdown with DeviceDropdown selection:",
+                        value
+                    );
+                }, 100);
+            }
+        }
     };
 
     const handleBackOne = () => {
-        setDisplayMode('List');
-      
-        // Call a separate function to handle any other UI updates or state changes required when switching back to 'List' mode.
-        resetNotesView();
-      };
-      
-      const resetNotesView = () => {
-        // Set editorContent to an empty string or its initial value
-        setEditorContent('');
-      
-        // Perform any other actions necessary to reset the Notes view (e.g., clearing selections)
-      };
+        console.log('Back button pressed. Current mode:', displayMode);
+        if (displayMode !== 'List') {
+            setDisplayMode('List');
+            console.log('Returning to List mode.');
+        } else {
+            console.log('Already in List mode, no action required.');
+        }
+    };
 
+    const handleSaveEditorContent = () => {
+        console.log('Attempting to save editor content:', editorContent);
+        if (!editorContent.trim()) {
+            Alert.alert('Warning', 'Editor content is empty!');
+            return;
+        }
+        saveData('IronyNotes', editorContent)
+            .then(() => {
+                console.log('Notes saved successfully:', editorContent);
+                Alert.alert('Saved', 'Your notes have been saved!');
+            })
+            .catch((err) => console.error('Failed to save notes:', err));
+    };
 
     return (
         <View style={{ padding: 20, width: '110%', height: '100%' }}>
@@ -108,6 +249,7 @@ function ParentFusionForms({ onBack }) {
                             onEditInit={(index, term) => {
                                 setEditingIndex(index);
                                 setTempTerm(term);
+                                console.log('Editing fusion at index:', index, 'Term:', term);
                             }}
                             onDelete={onDelete}
                             onEditSave={onEditSave}
@@ -119,9 +261,26 @@ function ParentFusionForms({ onBack }) {
 
                     <View style={{ position: 'relative', marginTop: '1.5%', bottom: '5%' }}>
                         <View style={{ position: 'relative', height: 65, width: '50%' }}>
-                            <DeviceDropdown onChange={handleDropdownChange} selectedOption={selectedOption} />
+                        <DeviceDropdown
+                            onChange={(value) => handleDropdownChange(value, "Device")}
+                            selectedOption={selectedOption}
+                        />
                         </View>
-                        <View style={{ position: 'relative', bottom: '3.5%' }}> 
+                        <View style={{ width:'47%', borderRadius:'50%', left:'53%', bottom:'19.5%' }}>
+                            <TouchableOpacity
+                                style={{
+                                backgroundColor: 'silver',
+                                padding: 10,
+                                borderRadius: 5,
+                                alignItems: 'center',
+                                }}
+                                onPress={handleStateChange}
+                            >
+                                <Text style={{ color: 'black', fontSize: 16 }}>Notess</Text>
+                            </TouchableOpacity>
+                        </View>
+                    <View style={{ bottom:'13%' }}>
+                        <View style={{ position: 'relative', bottom: '10%' }}> 
                             <FusionInput 
                                 newFusion={newFusion} 
                                 setNewFusion={setNewFusion} 
@@ -129,53 +288,65 @@ function ParentFusionForms({ onBack }) {
                             />
                         </View>
 
-                        <View style={{ position: 'relative', right: '40%', top: '18%', bottom: '5%', marginTop: '4%' }}>
+                        <View style={{ position: 'relative', right: '40%', top: '18%', bottom: '6%', marginTop: '4%' }}>
                             <View style={{ position:'relative', bottom:'55%', borderRadius:5, left:'2%' }}>
                                 <DeviceBackButton style={{ borderRadius: 15 }} onBack={onBack} />
                             </View>
                             <View style={{ position:'relative', bottom:'105.5%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
-                                <Button
+                            <Button
                                 title="Save"
                                 onPress={() => {
+                                    if (!fusions || fusions.length === 0) {
+                                    Alert.alert('No Fusions', 'There are no fusions to save!');
+                                    return;
+                                    }
+
                                 saveData(classIdentifier, fusions)
                                 .then(() => {
-                                console.log('List saved successfully:', fusions); // Debug log
-                                Alert.alert('Saved', 'Your fusions forms list has been saved!');
+                                Alert.alert('Saved', 'Your fusion forms list has been saved!');
+                                setLastSavedFusions([...fusions]);
                                 })
-                                .catch((err) => console.error('Failed to save list:', err));
-                                    }}
-                                color="#2096F3" // Optional: Customize button color
-                                />
+                                .catch(() => {
+                                Alert.alert('Error', 'An error occurred while saving. Please try again.');
+                                });
+                                }}
+                                color="#2096F3"
+                            />
                             </View>
                         </View>
+                    </View>
                     </View>
                 </>
             ) : (
                 <>
                 <View style={{ height: '104%' }}>
                     <View style={{ position: 'relative', padding: '2.5%', fontSize: 18, marginBottom: 10, backgroundColor: 'white', borderRadius: 15, bottom: '1.75%' }} >
-                        <Text > Write your irony notes and thoughts here</Text>
+                        <Text > Write your fusion form notes and thoughts here</Text>
                     </View>
-                    <DeviceQuill editorContent={editorContent} setEditorContent={setEditorContent} storageKey="IronyNotes" />
-                    <View >
-                        <View style={{ marginBottom: '2.5%' }}> 
-                            <DeviceDropdown selectedOption={selectedOption} onChange={handleDropdownChange} />
-                        </View>
-                        <View style={{ position:'relative', top:'15%', width: '50%' }}>
-                                    <Button
-                                        onPress={() => {
-                                        if (!editorContent.trim()) {
-                                        Alert.alert('Warning', 'Editor content is empty!');
-                                        return;
-                                        }
-                                        console.log('Saving content:', editorContent); // Debug log
-                                        }}
-                                        title="Save Notes"
-                                    />
-                                </View>
-                                <View style={{ position:'relative', bottom:'10%', left:'20%' }}>
-                                    <DeviceBackButton onPress={handleBackOne}/>
-                                </View>
+                    <DeviceQuill
+                        editorContent={editorContent}
+                        setEditorContent={(content) => {
+                            if (content !== editorContent) {
+                                console.log('DeviceQuill updated editor content:', content);
+                                setEditorContent(content);
+                            }
+                        }}
+                        storageKey="IronyNotes"
+                    />
+                    <View style={{ marginBottom: '2.5%' }}> 
+                        <NotesDropdown
+                            onChange={(value) => handleDropdownChange(value, "Notes")}
+                            selectedOption={notesOption}
+                        />
+                    </View>
+                    <View style={{ position:'relative', bottom:'1.5%', width: '50%', borderRadius: 50 }}>
+                        <Button
+                            onPress={handleSaveEditorContent}
+                            title="Save Notes"
+                        />
+                    </View>
+                    <View style={{ position:'relative', left:'35%', bottom: '7.25%' }}>
+                        <DeviceBackButton onPress={handleBackOne}/>
                     </View>
                 </View>
                 </> 

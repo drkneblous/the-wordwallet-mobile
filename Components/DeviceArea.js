@@ -22,12 +22,11 @@ function DeviceArea({ onChangeDevice }) {
 
     // Save note using useStorage
     const handleSaveNote = async () => {
-        // Save the note even if it's empty (reflecting the deleted state)
         try {
-            const key = `MiscellaneousNote`; // Fixed key for miscellaneous notes
-            await saveData(key, note); // Save note to storage
+            const key = `MiscellaneousNote`; // Key for miscellaneous notes
+            console.log('Saving Note with Key:', key, 'Value:', note); // Debug log
+            await saveData(key, note); // Save the note
             Alert.alert('Success', 'Your miscellaneous notes have been saved!');
-            console.log('Saved Note:', note); // Debug log
         } catch (error) {
             console.error('Failed to save note:', error);
             Alert.alert('Error', 'Failed to save your note. Please try again.');

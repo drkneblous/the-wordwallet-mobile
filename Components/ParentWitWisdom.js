@@ -22,6 +22,13 @@ function ParentWitWisdom({ onBack }) {
     const [lastSavedEntries, setLastSavedEntries] = useState(null); // Track the last saved state
     const classIdentifier = 'WitWisdomWords'; // Unique identifier for this component
 
+    useEffect(() => {
+        if (displayMode !== selectedOption) {
+            setSelectedOption(displayMode);
+            console.log('Corrected selectedOption to match displayMode:', displayMode);
+        }
+    }, [displayMode, selectedOption]);
+
     // Load entries from AsyncStorage
     useEffect(() => {
         loadStoredData(classIdentifier).then((data) => {
@@ -74,8 +81,16 @@ function ParentWitWisdom({ onBack }) {
     };
 
     const handleDropdownChange = (value) => {
-        setSelectedOption(value);
-        setDisplayMode(value === 'Notes' ? 'Notes' : 'List');
+        console.log('Dropdown value change requested:', value);
+    
+        // Determine the new display mode and synchronize selectedOption.
+        const newDisplayMode = value === 'Notes' ? 'Notes' : 'List';
+        const newSelectedOption = newDisplayMode;
+    
+        setDisplayMode(newDisplayMode);
+        setSelectedOption(newSelectedOption);
+    
+        console.log('State synchronized:', { displayMode: newDisplayMode, selectedOption: newSelectedOption });
     };
 
     const onEditInit = (index, firstPart, secondPart, category) => {

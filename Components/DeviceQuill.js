@@ -97,11 +97,10 @@ const DeviceQuill = ({ editorContent, setEditorContent, storageKey }) => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         padding: 10,
         backgroundColor: '#fff',
-        height: '100%',
-        maxHeight: 800
+        height: '75%',
+        maxHeight: 900
     },
     editor: {
         flex: 1,
