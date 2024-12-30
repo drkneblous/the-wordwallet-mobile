@@ -19,7 +19,7 @@ function FusionInput({ newFusion, setNewFusion, onAdd }) {
                     backgroundColor: 'white',
                 }}
             />
-        <View style={{ position:'relative', top: '2.5%', overflow:'none' }}>
+        <View style={{ position:'relative', top: '2.5%', overflow: 'hidden',  borderRadius: 10, borderColor:'black', borderWith:1 }}>
             <Button color='orange' title="Add" onPress={onAdd} />
         </View>
         </View>

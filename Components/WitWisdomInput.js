@@ -29,7 +29,7 @@ function WitWisdomInput ({ entryPair, setNewEntry, onAdd }) {
                 placeholder="enter author"
                 />
             </View>
-            <View style={{ position: 'relative', left: '32%', overflow:'hidden', borderRadius:10, marginTop: '2.5%', width: '35%' }} >
+            <View style={{ position: 'relative', left: '33%', bottom:'3%', overflow:'hidden', borderRadius:5, borderColor:'black', borderWidth:1, marginTop: '2.5%', width: '35%' }} >
                 <Button color='orange' title="Add" onPress={onAdd} />
             </View>
         </View>

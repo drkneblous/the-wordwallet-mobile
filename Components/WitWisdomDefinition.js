@@ -22,6 +22,8 @@ const styles = StyleSheet.create({
         padding: 15,
         backgroundColor: 'white',
         borderRadius: 8,
+        borderColor:'black',
+        borderWidth:1,
         marginBottom: '5%'
     },
     scrollableArea: {

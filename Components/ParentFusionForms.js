@@ -40,6 +40,7 @@ function ParentFusionForms({ onBack }) {
     const [fusions, setFusions] = useState([]);
     const [lastSavedFusions, setLastSavedFusions] = useState([]);
     const lastSavedFusionsRef = useRef([]);
+    const [notesDataLoaded, setNotesDataLoaded] = useState(false); // New state to track if notes are already loaded
 
     const hasFusionChanged = () => {
         if (fusions.length !== lastSavedFusionsRef.current.length) {
@@ -102,15 +103,16 @@ function ParentFusionForms({ onBack }) {
 
     // Load editor content when displayMode changes to Notes
     useEffect(() => {
-        if (displayMode === 'Notes') {
-            loadStoredData('IronyNotes')
+        if (displayMode === 'Notes' && !notesDataLoaded) { // Check if data is already loaded
+            loadStoredData('FusionNotes')
                 .then((data) => {
                     setEditorContent(data || '');
-                    console.log('Data loaded for IronyNotes:', data);
+                    console.log('Data loaded for FusionNotes:', data);
+                    setNotesDataLoaded(true); // Mark data as loaded
                 })
-                .catch((err) => console.error('Error loading IronyNotes:', err));
+                .catch((err) => console.error('Error loading FusionNotes:', err));
         }
-    }, [displayMode, loadStoredData]);
+    }, [displayMode, loadStoredData, notesDataLoaded]); // Added notesDataLoaded to prevent continuous loading
 
     useEffect(() => {
         console.log('Fusions state updated:', fusions);
@@ -216,13 +218,15 @@ function ParentFusionForms({ onBack }) {
             Alert.alert('Warning', 'Editor content is empty!');
             return;
         }
-        saveData('IronyNotes', editorContent)
+        saveData('FusionNotes', editorContent)
             .then(() => {
                 console.log('Notes saved successfully:', editorContent);
                 Alert.alert('Saved', 'Your notes have been saved!');
             })
             .catch((err) => console.error('Failed to save notes:', err));
     };
+
+
 
     return (
         <View style={{ padding: 20, width: '110%', height: '100%' }}>
@@ -270,9 +274,11 @@ function ParentFusionForms({ onBack }) {
                             <TouchableOpacity
                                 style={{
                                 backgroundColor: 'silver',
-                                padding: 10,
+                                padding: 12,
                                 borderRadius: 5,
                                 alignItems: 'center',
+                                borderColor:'black',
+                                borderWidth:1,
                                 }}
                                 onPress={handleStateChange}
                             >
@@ -280,7 +286,7 @@ function ParentFusionForms({ onBack }) {
                             </TouchableOpacity>
                         </View>
                     <View style={{ bottom:'13%' }}>
-                        <View style={{ position: 'relative', bottom: '10%' }}> 
+                        <View style={{ position: 'relative', bottom: '13%' }}> 
                             <FusionInput 
                                 newFusion={newFusion} 
                                 setNewFusion={setNewFusion} 
@@ -289,10 +295,10 @@ function ParentFusionForms({ onBack }) {
                         </View>
 
                         <View style={{ position: 'relative', right: '40%', top: '18%', bottom: '6%', marginTop: '4%' }}>
-                            <View style={{ position:'relative', bottom:'55%', borderRadius:5, left:'2%' }}>
-                                <DeviceBackButton style={{ borderRadius: 15 }} onBack={onBack} />
+                            <View style={{ position:'relative', bottom:'61%', borderRadius:5, left:'2%' }}>
+                                <DeviceBackButton onBack={onBack} />
                             </View>
-                            <View style={{ position:'relative', bottom:'105.5%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
+                            <View style={{ position:'relative', bottom:'111.5%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
                             <Button
                                 title="Save"
                                 onPress={() => {
@@ -331,7 +337,7 @@ function ParentFusionForms({ onBack }) {
                                 setEditorContent(content);
                             }
                         }}
-                        storageKey="IronyNotes"
+                        storageKey="FusionNotes"
                     />
                     <View style={{ marginBottom: '2.5%' }}> 
                         <NotesDropdown

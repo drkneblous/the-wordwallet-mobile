@@ -3,15 +3,17 @@ import { RadioButton } from 'react-native-paper';
 import { useStorage } from './StorageContext';
 import DeviceBackButton from './DeviceBackButton';
 import DeviceDropdown from './DeviceDropdown';
+import NotesDropdown from './NotesDropdown';
 import WitWisdomDefinition from './WitWisdomDefinition';
 import WitWisdomList from './WitWisdomList';
 import WitWisdomInput from './WitWisdomInput';
 import DeviceQuill from './DeviceQuill';
-import { View, Text, Button, Alert } from 'react-native';
+import { View, Text, Button, Alert, TouchableOpacity } from 'react-native';
 
 function ParentWitWisdom({ onBack }) {
     const [newEntry, setNewEntry] = useState({ firstPart: '', secondPart: '' });
     const [selectedOption, setSelectedOption] = useState('Create');
+    const [notesOption, setNotesOption] = useState('Null');
     const [displayMode, setDisplayMode] = useState('List');
     const [editingIndex, setEditingIndex] = useState(-1);
     const [tempEntry, setTempEntry] = useState({ firstPart: '', secondPart: '' });
@@ -21,13 +23,6 @@ function ParentWitWisdom({ onBack }) {
     const [entries, setEntries] = useState([]); // Initialize with empty array
     const [lastSavedEntries, setLastSavedEntries] = useState(null); // Track the last saved state
     const classIdentifier = 'WitWisdomWords'; // Unique identifier for this component
-
-    useEffect(() => {
-        if (displayMode !== selectedOption) {
-            setSelectedOption(displayMode);
-            console.log('Corrected selectedOption to match displayMode:', displayMode);
-        }
-    }, [displayMode, selectedOption]);
 
     // Load entries from AsyncStorage
     useEffect(() => {
@@ -43,6 +38,18 @@ function ParentWitWisdom({ onBack }) {
             setLastSavedEntries(entries); // Update the last saved state
         }
     }, [entries, saveData, classIdentifier, lastSavedEntries]);
+
+    // Fix: Prevent repeated loading of notes content
+    useEffect(() => {
+        if (displayMode === 'Notes' && editorContent === '') { // Only load content if it's empty
+            loadStoredData('WitWisdomNotes')
+                .then((data) => {
+                    setEditorContent(data || ''); // Set content once
+                    console.log('Data loaded for WitWisdomNotes:', data);
+                })
+                .catch((err) => console.error('Error loading WitWisdomNotes:', err));
+        }
+    }, [displayMode, loadStoredData, editorContent]); // Added editorContent as a dependency
 
     const handleAddEntry = () => {
         if (newEntry.firstPart.trim() && newEntry.secondPart.trim()) {
@@ -80,17 +87,27 @@ function ParentWitWisdom({ onBack }) {
         setTempEntry({ firstPart: '', secondPart: '', category: '' }); // Clear tempEntry after saving
     };
 
-    const handleDropdownChange = (value) => {
-        console.log('Dropdown value change requested:', value);
+    const handleDropdownChange = (value, dropdownType) => {
+        console.log(`${dropdownType} Dropdown changed to:`, value);
     
-        // Determine the new display mode and synchronize selectedOption.
-        const newDisplayMode = value === 'Notes' ? 'Notes' : 'List';
-        const newSelectedOption = newDisplayMode;
+        if (dropdownType === "Notes") {
+            setNotesOption(value);
     
-        setDisplayMode(newDisplayMode);
-        setSelectedOption(newSelectedOption);
+            if (value !== "Null" && displayMode === "Notes") {
+                setDisplayMode("List");  // Set to List mode after Notes selection
+                setSelectedOption(value); // Sync selectedOption with NotesDropdown value
+                console.log("Syncing selectedOption with NotesDropdown selection:", value);
+            }
+        } else if (dropdownType === "Device") {
+            if (displayMode === "List") {
+                setSelectedOption(value); // Only set selectedOption for Device dropdown in List mode
+            }
     
-        console.log('State synchronized:', { displayMode: newDisplayMode, selectedOption: newSelectedOption });
+            if (displayMode === "Notes") {
+                setNotesOption(value);  // Sync NotesDropdown with DeviceDropdown selection
+                console.log("Syncing NotesDropdown with DeviceDropdown selection:", value);
+            }
+        }
     };
 
     const onEditInit = (index, firstPart, secondPart, category) => {
@@ -101,6 +118,14 @@ function ParentWitWisdom({ onBack }) {
     const handleBackOne = () => {
         setDisplayMode('List'); // Resets to device view
     };
+
+    const handleStateChange = () => {
+        console.log('Switching to Notes mode...');
+    
+        // Resetting necessary states when entering Notes
+        setNotesOption('Null'); // Or your desired default
+        setDisplayMode('Notes');
+    };  
 
 
     return (
@@ -143,20 +168,21 @@ function ParentWitWisdom({ onBack }) {
                         }}
                     >
                         <View style={{ position: 'relative', height: 65, width: '50%' }}>
-                            <DeviceDropdown selectedOption={selectedOption} onChange={handleDropdownChange} />
+                            <DeviceDropdown onChange={(value) => handleDropdownChange(value, "Device")}
+                            selectedOption={selectedOption} />
                         </View>
                         <RadioButton.Group
                             onValueChange={(newValue) => setRadioSelection(newValue)}
                             value={radioSelection}
                         >
-                            <View style={{ position: 'relative', left: '40%' }}>
+                            <View style={{ position: 'relative', left: '40%', top:'4.5%' }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Text style={{ color: 'white' }}>Wit</Text>
-                                    <RadioButton color="white" value="Wit" />
+                                    <Text style={{ position:'relative', right:'15%', color: 'white' }}>Wit</Text>
+                                    <RadioButton backgroundColor="white" value="Wit" />
                                 </View>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Text style={{ color: 'white' }}>Wisdom</Text>
-                                    <RadioButton color="white" value="Wisdom" />
+                                    <Text style={{ position:'relative', right:'15%', color: 'white' }}>Wisdom</Text>
+                                    <RadioButton backgroundColor="white" value="Wisdom" />
                                 </View>
                             </View>
                         </RadioButton.Group>
@@ -176,11 +202,29 @@ function ParentWitWisdom({ onBack }) {
                                 onAdd={handleAddEntry}
                             />
                         </View>
+                        <View>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'silver',
+                                    padding: 7,
+                                    borderRadius: 5,
+                                    borderColor: 'black',
+                                    borderWidth: 1,
+                                    alignItems: 'center',
+                                    width: '35%',
+                                    bottom: '21%',
+                                    left:'32.5%'
+                                    }}
+                                    onPress={handleStateChange}
+                                >
+                                <Text style={{ color: 'black', fontSize: 16 }}>Notess</Text>
+                            </TouchableOpacity>  
+                        </View>
                         <View style={{ position: 'relative', right: '40%', top: '18%', bottom: '5%', marginTop: '4%' }}>
-                            <View style={{ position:'relative', bottom:'75%', borderRadius:5, left:'2%' }}>
-                                <DeviceBackButton style={{ borderRadius: 15 }} onBack={onBack} />
+                            <View style={{ position:'relative', bottom:'142%', borderRadius:5, left:'2%' }}>
+                                <DeviceBackButton style={{ borderRadius: 15, borderColor:'black', borderWidth:1 }} onBack={onBack} />
                             </View>
-                            <View style={{ position:'relative', bottom:'125.5%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
+                            <View style={{ position:'relative', bottom:'193%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
                                 <Button
                                 title="Save"
                                 onPress={() => {
@@ -220,9 +264,12 @@ function ParentWitWisdom({ onBack }) {
                         />
                         <View>
                             <View style={{ marginBottom: '2.5%' }}>
-                                <DeviceDropdown selectedOption={selectedOption} onChange={handleDropdownChange} />
+                            <NotesDropdown
+                                onChange={(value) => handleDropdownChange(value, "Notes")}
+                                selectedOption={notesOption}
+                                />
                             </View>
-                            <View style={{ position:'relative', top:'15%', width: '50%' }}>
+                            <View style={{ position:'relative', bottom:'7%', width: '50%', overFlow:'hidden', borderRadius: 10, borderColor:'black', borderWidth:1 }}>
                                 <Button
                                     onPress={() => {
                                     if (!editorContent.trim()) {
@@ -234,7 +281,7 @@ function ParentWitWisdom({ onBack }) {
                                     title="Save Notes"
                                 />
                             </View>
-                            <View style={{ position:'relative', bottom:'10%', left:'20%' }}>
+                            <View style={{ position:'relative', bottom:'32%', left:'35%' }}>
                                 <DeviceBackButton onPress={handleBackOne}/>
                             </View>
                         </View>

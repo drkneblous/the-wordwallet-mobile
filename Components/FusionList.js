@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
 function FusionList({ fusions, onEditInit, onDelete, onEditSave, editingIndex, tempTerm, setTempTerm }) {
     return (
@@ -26,17 +26,17 @@ function FusionList({ fusions, onEditInit, onDelete, onEditSave, editingIndex, t
                                         {index + 1}. {item.text || 'No text available'}
                                     </Text>
                                     <View style={styles.buttonContainer}>
-                                        <Button
-                                            title="Ed"
-                                            onPress={() => onEditInit(index, item.text)}
-                                            color="#2096F3" // Smaller blue button for Edit
-                                        />
+                                        <View>
+                                            <TouchableOpacity onPress={() => onEditInit(index, item.text)} style={{ backgroundColor: "#2096F3", padding:10, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1   }}>
+                                                <Text style={{fontSize:14, color:'white' }}>Ed</Text>
+                                            </TouchableOpacity>                                            
+                                        </View>
                                         <View style={styles.gap} />
-                                        <Button
-                                            title="Del"
-                                            onPress={() => onDelete(item.id)}
-                                            color="#ff6347" // Smaller red button for Delete
-                                        />
+                                        <View>
+                                            <TouchableOpacity  onPress={() => onDelete(item.id)}  style={{ backgroundColor: '#ff6347', padding:10, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1 }}>
+                                                <Text style={{fontSize:14, color:'white' }}>Dell</Text>
+                                            </TouchableOpacity>
+                                        </View>
                                     </View>
                                 </View>
                             )}

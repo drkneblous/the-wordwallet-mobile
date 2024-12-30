@@ -15,6 +15,8 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         overflow: 'hidden',
         borderRadius:5,
+        borderColor:'black',
+        borderWidth:1
     },
 });
 

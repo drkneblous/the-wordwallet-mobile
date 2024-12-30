@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, Button, Alert } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useStorage } from './StorageContext';
+import TransLang from './TransLang';
+import DictionaryAndThesaurus from './DictionaryAndThesaurus';
 import Card from './Card';
 import WordList from './WordList';
 import InputArea from './InputArea';
 import DeviceArea from './DeviceArea';
 import ParentFusionForms from './ParentFusionForms';
 import ParentWitWisdom from './ParentWitWisdom';
-/*import ParentAlliteration from './ParentAlliteration';
+import ParentNicknames from './ParentNicknames';
+/*import ParentTerms from './ParentTerms';  
+import ParentAlliteration from './ParentAlliteration';
 import ParentAllusion from './ParentAllusion';
 import ParentAllegory from './ParentAllegory';
 import ParentEuphemism from './ParentEuphemism';
@@ -23,9 +27,7 @@ import ParentOxymoron from './ParentOxymoron';
 import ParentPersonification from './ParentPersonification';
 import ParentSimile from './ParentSimile';
 import ParentNicknames from './ParentNicknames';
-import ParentTerms from './ParentTerms';
-import TransLang from './TransLang';
-import DictionaryAndThesaurus from './DictionaryAndThesaurus'; */
+import ParentTerms from './ParentTerms';  */
 
 function WalletFlap() {
   const { loadStoredData, saveData } = useStorage(); // Updated destructure for storage methods
@@ -122,9 +124,9 @@ function WalletFlap() {
                         <ParentFusionForms onBack={handleBack} />
                     ) : selectedDevice === 'Wit & Wisdom' ? (
                         <ParentWitWisdom onBack={handleBack} />
-                /*    ) : selectedDevice === 'Nicknames' ? (
+                    ) : selectedDevice === 'Nicknames' ? (
                         <ParentNicknames onBack={handleBack} />
-                    ) : selectedDevice === 'Terms' ? (
+                /*    ) : selectedDevice === 'Terms' ? (
                         <ParentTerms onBack={handleBack} />
                     ) : selectedDevice === 'Alliteration' ? (
                         <ParentAlliteration onBack={handleBack} />
