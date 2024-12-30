@@ -128,6 +128,21 @@ function ParentWitWisdom({ onBack }) {
     };  
 
 
+     const handleSaveEditorContent = () => {
+            console.log('Attempting to save editor content:', editorContent);
+            if (!editorContent.trim()) {
+                Alert.alert('Warning', 'Editor content is empty!');
+                return;
+            }
+            saveData('WitWisdomNotes', editorContent)
+                .then(() => {
+                    console.log('Notes saved successfully:', editorContent);
+                    Alert.alert('Saved', 'Your notes have been saved!');
+                })
+                .catch((err) => console.error('Failed to save notes:', err));
+        };
+
+
     return (
         <View style={{ padding: 20, width: '110%', height: '100%' }}>
             {displayMode === 'List' ? (
@@ -271,13 +286,7 @@ function ParentWitWisdom({ onBack }) {
                             </View>
                             <View style={{ position:'relative', bottom:'7%', width: '50%', overFlow:'hidden', borderRadius: 10, borderColor:'black', borderWidth:1 }}>
                                 <Button
-                                    onPress={() => {
-                                    if (!editorContent.trim()) {
-                                    Alert.alert('Warning', 'Editor content is empty!');
-                                    return;
-                                    }
-                                    console.log('Saving content:', editorContent); // Debug log
-                                    }}
+                                    onPress={handleSaveEditorContent}
                                     title="Save Notes"
                                 />
                             </View>

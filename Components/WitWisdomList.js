@@ -43,13 +43,13 @@ function WitWisdomList({ entries, onEditInit, onDelete, onEditSave, editingIndex
                     </Text>
                     <View style={styles.controlButtons}>
                         <View>
-                            <TouchableOpacity onPress={() => onEditInit(index, firstPart, secondPart, category)} style={{ backgroundColor: "#2096F3", padding:10, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1   }}>
+                            <TouchableOpacity onPress={() => onEditInit(index, firstPart, secondPart, category)} style={{ backgroundColor: "#2096F3", padding:6, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1   }}>
                                 <Text style={{fontSize:14, color:'white' }}>Ed</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={styles.gap} />
                         <View>
-                            <TouchableOpacity onPress={() => onDelete(entry.id)}  style={{ backgroundColor: '#ff6347', padding:10, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1 }}>
+                            <TouchableOpacity onPress={() => onDelete(entry.id)}  style={{ backgroundColor: '#ff6347', padding:6, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1 }}>
                                 <Text style={{fontSize:14, color:'white' }}>Dell</Text>
                             </TouchableOpacity>
                         </View>

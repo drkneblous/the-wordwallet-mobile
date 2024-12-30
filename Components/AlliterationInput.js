@@ -17,7 +17,7 @@ function AlliterationInput({ startingLetter, inputAlliteration, onLetterChange, 
                 placeholder="an alliteration"
                 style={styles.inputTwo} // Adjusted styles for horizontal layout
             />
-            <View style={styles.buttonContainer}>
+            <View style={{ marginLeft: 12, overFlow:'hidden', borderRadius:10}} >
                 <Button color='orange' title="Add" onPress={onAdd} />
             </View>
         </View>
@@ -43,16 +43,11 @@ const styles = StyleSheet.create({
     inputTwo: {
         backgroundColor: 'white',
         height: 55, // Make height consistent with the first input
-        width: '55%',
-        flex: 1, // Take remaining space
+        width: '70%', // Take remaining space
         padding: 8,
         overflow:'hidden',
         borderRadius:5,
     },
-    buttonContainer: {
-        marginLeft: 12, // Adding margin left to give some space from the last input
-        height: 55
-    }
 });
 
 export default AlliterationInput;

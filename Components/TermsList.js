@@ -1,6 +1,6 @@
 import React from 'react';
 import { RadioButton } from 'react-native-paper'
-import { View, Text, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 
 function WitWisdomList({ entries, onEditInit, onDelete, onEditSave, editingIndex, editTempEntry, setEditTempEntry }) {
     return (
@@ -50,9 +50,17 @@ function WitWisdomList({ entries, onEditInit, onDelete, onEditSave, editingIndex
                         {index + 1}. {firstPart} : {secondPart} {entry.category && `(${entry.category})`}
                     </Text>
                     <View style={styles.controlButtons}>
-                        <Button title="Ed" onPress={() => onEditInit(index, firstPart, secondPart, category)} color="#2096F3"  />
+                        <View>
+                            <TouchableOpacity onPress={() => onEditInit(index, firstPart, secondPart, category)} style={{ backgroundColor: "#2096F3", padding:6, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1   }}>
+                                <Text style={{fontSize:14, color:'white' }}>Ed</Text>
+                            </TouchableOpacity>
+                        </View>
                         <View style={styles.gap} />
-                        <Button title="Del" onPress={() => onDelete(entry.id)} color='#ff6347' />
+                        <View>
+                            <TouchableOpacity onPress={() => onDelete(entry.id)}  style={{ backgroundColor: '#ff6347', padding:6, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1 }}>
+                                <Text style={{fontSize:14, color:'white' }}>Dell</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             )}

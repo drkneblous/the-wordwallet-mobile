@@ -11,9 +11,9 @@ import DeviceArea from './DeviceArea';
 import ParentFusionForms from './ParentFusionForms';
 import ParentWitWisdom from './ParentWitWisdom';
 import ParentNicknames from './ParentNicknames';
-/*import ParentTerms from './ParentTerms';  
+import ParentTerms from './ParentTerms';  
 import ParentAlliteration from './ParentAlliteration';
-import ParentAllusion from './ParentAllusion';
+/*import ParentAllusion from './ParentAllusion';
 import ParentAllegory from './ParentAllegory';
 import ParentEuphemism from './ParentEuphemism';
 import ParentHyperbole from './ParentHyperbole';
@@ -126,11 +126,11 @@ function WalletFlap() {
                         <ParentWitWisdom onBack={handleBack} />
                     ) : selectedDevice === 'Nicknames' ? (
                         <ParentNicknames onBack={handleBack} />
-                /*    ) : selectedDevice === 'Terms' ? (
+                    ) : selectedDevice === 'Terms' ? (
                         <ParentTerms onBack={handleBack} />
                     ) : selectedDevice === 'Alliteration' ? (
                         <ParentAlliteration onBack={handleBack} />
-                    ) : selectedDevice === 'Allusion' ? (
+                /*    ) : selectedDevice === 'Allusion' ? (
                         <ParentAllusion onBack={handleBack} />
                     ) : selectedDevice === 'Allegory' ? (
                         <ParentAllegory onBack={handleBack} />

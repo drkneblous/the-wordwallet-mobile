@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
 function AlliterationList({ alliterations, onEditInit, onDelete, onEditSave, editingIndex, tempAlliteration, setTempAlliteration }) {
     return (
@@ -22,10 +22,18 @@ function AlliterationList({ alliterations, onEditInit, onDelete, onEditSave, edi
                                 <Text style={[styles.wordText, {color: item.style?.color || 'black'}]}>
                                     {`${index + 1}. ${item.term}`}
                                 </Text>
-                                <View style={styles.controlButtons}>
-                                    <Button title="Ed" onPress={() => onEditInit(index, item)} color='#4A90E2'  />
+                                <View style={styles.buttonContainer}>
+                                    <View>
+                                        <TouchableOpacity onPress={() => onEditInit(index, item)} style={{ backgroundColor: '#4A90E2', padding:6, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1   }}>
+                                            <Text style={{fontSize:14, color:'white' }}>Ed</Text>
+                                        </TouchableOpacity>                                            
+                                    </View>
                                     <View style={styles.gap} />
-                                    <Button title="Del" onPress={() => onDelete(index)} color="#2096F3" />
+                                    <View>
+                                        <TouchableOpacity  onPress={() => onDelete(index)} style={{ backgroundColor: '#ff6347', padding:6, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1 }}>
+                                            <Text style={{fontSize:14, color:'white' }}>Dell</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
                         )}
@@ -74,7 +82,7 @@ const styles = StyleSheet.create({
     wordText: {
         flex: 1, // Allow text to take up available space, ensuring it doesn't push buttons off screen
     },
-    controlButtons: {
+    buttonContainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },

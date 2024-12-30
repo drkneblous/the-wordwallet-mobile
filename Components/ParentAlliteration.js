@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Alert, Button } from 'react-native';
+import { View, Text, Alert, Button, TouchableOpacity } from 'react-native';
 import { useStorage } from './StorageContext';
 import AlliterationDefinition from './AlliterationDefinition';
 import AlliterationList from './AlliterationList';
 import AlliterationInput from './AlliterationInput';
 import LetterNavigation from './LetterNavigation';
 import DeviceDropdown from './DeviceDropdown';
+import NotesDropdown from './NotesDropdown';
 import DeviceBackButton from './DeviceBackButton';
 import DeviceQuill from './DeviceQuill';
 
@@ -18,6 +19,7 @@ function ParentAlliteration({ onBack }) {
     const [startingLetter, setStartingLetter] = useState('A'); // Letter navigation
     const [inputAlliteration, setInputAlliteration] = useState(''); // Input for new alliteration
     const [selectedOption, setSelectedOption] = useState('Create'); // Dropdown selection
+    const [notesOption, setNotesOption] = useState('Null');
     const [displayMode, setDisplayMode] = useState('List'); // Display mode: List or Notes
     const [editorContent, setEditorContent] = useState(''); // Tracks content of DeviceQuill
     const { loadStoredData, saveData } = useStorage();
@@ -52,6 +54,17 @@ function ParentAlliteration({ onBack }) {
         );
         setLocalAlliterations(groupedAlliterations);
     }, [alliterations]);
+
+   useEffect(() => {
+           if (displayMode === 'Notes' && editorContent === '') { // Only load content if it's empty
+               loadStoredData('AlliterationNotes')
+                   .then((data) => {
+                       setEditorContent(data || ''); // Set content once
+                       console.log('Data loaded for AlliterationNotes:', data);
+                   })
+                   .catch((err) => console.error('Error loading AlliterationNotes:', err));
+           }
+       }, [displayMode, loadStoredData, editorContent]); // Added editorContent as a dependency
 
     // Handle adding a new alliteration
     const handleAddClick = () => {
@@ -95,9 +108,35 @@ function ParentAlliteration({ onBack }) {
         setTempAlliteration(''); // Clear the temporary storage
     };
 
-    const handleDropdownChange = (value) => {
-        setSelectedOption(value);
-        setDisplayMode(value === 'Notes' ? 'Notes' : 'List');
+    const handleDropdownChange = (value, dropdownType) => {
+        console.log(`${dropdownType} Dropdown changed to:`, value);
+    
+        if (dropdownType === "Notes") {
+            setNotesOption(value);
+    
+            if (value !== "Null" && displayMode === "Notes") {
+                setTimeout(() => {
+                    setDisplayMode("List");
+                    setSelectedOption(value);
+                    console.log(
+                        "Reverting to List mode and syncing selectedOption with NotesDropdown selection:",
+                        value
+                    );
+                }, 100);
+            }
+        } else if (dropdownType === "Device") {
+            setSelectedOption(value);
+    
+            if (displayMode === "Notes") {
+                setTimeout(() => {
+                    setNotesOption(value);
+                    console.log(
+                        "Syncing NotesDropdown with DeviceDropdown selection:",
+                        value
+                    );
+                }, 100);
+            }
+        }
     };
 
     const handleSaveEditorContent = () => {
@@ -105,14 +144,22 @@ function ParentAlliteration({ onBack }) {
             Alert.alert('Warning', 'Editor content is empty!');
             return;
         }
-        saveData('GlobalNotes', editorContent).then(() => {
-            console.log('Data saved to GlobalNotes:', editorContent); // Debug log
+        saveData('AlliterationNotes', editorContent).then(() => {
+            console.log('Data saved to AlliterationNotes:', editorContent); // Debug log
             Alert.alert('Saved', 'Your notes have been saved!');
         }).catch((err) => console.error('Failed to save notes:', err));
     };
 
     const handleBackOne = () => {
         setDisplayMode('List'); // Resets to device view
+    };
+
+    const handleStateChange = () => {
+        console.log('Switching to Notes mode...');
+    
+        // Resetting necessary states when entering Notes
+        setNotesOption('Null'); // Or your desired default
+        setDisplayMode('Notes');
     };
 
 
@@ -151,9 +198,12 @@ function ParentAlliteration({ onBack }) {
                     </View>
                     <View style={{ width: '100%', position: 'relative', bottom: '5%' }}>
                         <View style={{ position: 'relative', height: 65, width: '50%', marginBottom: '2.5%' }}>
-                            <DeviceDropdown onChange={handleDropdownChange} selectedOption={selectedOption} />
+                            <DeviceDropdown
+                                onChange={(value) => handleDropdownChange(value, "Device")}
+                                selectedOption={selectedOption}
+                            />
                         </View>
-                        <View style={{ position: 'relative', right: '3%' }}>
+                        <View style={{ position: 'relative', right: '3%', bottom:'3%' }}>
                             <AlliterationInput
                                 startingLetter={startingLetter}
                                 inputAlliteration={inputAlliteration}
@@ -162,7 +212,22 @@ function ParentAlliteration({ onBack }) {
                                 onAdd={handleAddClick}
                             />
                         </View>
-                        <View style={{ position: 'relative', bottom: '7%' }}>
+                        <View style={{ width:'35%', borderRadius:'50%', left:'32.5%', top:'36.25%' }}>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'silver',
+                                    padding: 7,
+                                    borderRadius: 5,
+                                    alignItems: 'center',
+                                    borderColor:'black',
+                                    borderWidth:1,
+                                    }}
+                                    onPress={handleStateChange}
+                                >
+                                    <Text style={{ color: 'black', fontSize: 16 }}>Notess</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ position: 'relative', bottom: '20%',  }}>
                             <LetterNavigation
                                 onSelectLetter={(letter) => {
                                     const index = letter.charCodeAt(0) - 'A'.charCodeAt(0);
@@ -171,7 +236,7 @@ function ParentAlliteration({ onBack }) {
                                 }}
                             />
                         </View>
-                        <View style={{ position: 'relative', right: '40%', top: '18%', bottom: '5%', marginTop: '4%' }}>
+                        <View style={{ position: 'relative', right: '40%', top:'3%', marginTop: '4%' }}>
                             <View style={{ position:'relative', bottom:'5%', borderRadius:5 }}>
                                 <DeviceBackButton style={{ borderRadius: 15 }} onBack={onBack} />
                             </View>
@@ -198,24 +263,21 @@ function ParentAlliteration({ onBack }) {
                 <View style={{ position: 'relative', padding: '2.5%', fontSize: 18, marginBottom: 10, backgroundColor: 'white', borderRadius: 15, bottom: '1.75%' }} >
                     <Text > Write your alliteration notes and thoughts here</Text>
                 </View>
-                <DeviceQuill editorContent={editorContent} setEditorContent={setEditorContent} storageKey="IronyNotes" />
+                <DeviceQuill editorContent={editorContent} setEditorContent={setEditorContent} storageKey="AlliterationNotes" />
                 <View >
-                    <View style={{ marginBottom: '2.5%' }}> 
-                        <DeviceDropdown selectedOption={selectedOption} onChange={handleDropdownChange} />
+                    <View style={{ marginBottom: '2.5%', borderColor:'black', borderWidth:1 }}> 
+                        <NotesDropdown
+                            onChange={(value) => handleDropdownChange(value, "Notes")}
+                            selectedOption={notesOption}
+                        />
                     </View>
-                    <View style={{ position:'relative', top:'15%', width: '50%' }}>
+                    <View style={{ position:'relative', bottom:'7.5%', width: '50%', borderColor:'black', borderWidth:1, overFlow:'hidden', borderRadius:5 }}>
                                 <Button
-                                    onPress={() => {
-                                    if (!editorContent.trim()) {
-                                    Alert.alert('Warning', 'Editor content is empty!');
-                                    return;
-                                    }
-                                    console.log('Saving content:', editorContent); // Debug log
-                                    }}
+                                    onPress={handleSaveEditorContent}
                                     title="Save Notes"
                                 />
                             </View>
-                            <View style={{ position:'relative', bottom:'10%', left:'20%' }}>
+                            <View style={{ position:'relative', bottom:'33%', left:'35%', }}>
                                 <DeviceBackButton onPress={handleBackOne}/>
                             </View>
                 </View>

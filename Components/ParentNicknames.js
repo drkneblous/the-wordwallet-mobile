@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { RadioButton } from 'react-native-paper'
 import DeviceBackButton from './DeviceBackButton'
 import DeviceDropdown from './DeviceDropdown'
+import NotesDropdown from './NotesDropdown'
 import NicknamesDefinition from './NicknamesDefinition'
 import NicknamesList from './NicknamesList'
 import NicknamesInput from './NicknamesInput'
 import DeviceQuill from './DeviceQuill'
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Button, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useStorage } from './StorageContext';
 
 function ParentNicknames({ onBack }) {
     const [entries, setEntries] = useState([]);
     const [newEntry, setNewEntry] = useState({ firstPart: '', secondPart: '' });
     const [selectedOption, setSelectedOption] = useState('Create');
+    const [notesOption, setNotesOption] = useState('Null');
     const [displayMode, setDisplayMode] = useState('List');
     const [editingIndex, setEditingIndex] = useState(-1);
     const [tempEntry, setTempEntry] = useState({ firstPart: '', secondPart: '' });
@@ -27,7 +29,7 @@ function ParentNicknames({ onBack }) {
             setEntries(data || []); // Load Nicknames entries or initialize with an empty array
         });
     }, [classIdentifier]);
-    
+
     // Save data when entries change
     useEffect(() => {
         if (entries.length > 0 && JSON.stringify(entries) !== JSON.stringify(lastSavedEntries)) {
@@ -36,7 +38,21 @@ function ParentNicknames({ onBack }) {
         }
     }, [entries, saveData, classIdentifier, lastSavedEntries]);
 
-    
+    useEffect(() => {
+        // Check if we're in 'Notes' mode and editorContent is not yet loaded
+        if (displayMode === 'Notes' && !editorContent) {
+            loadStoredData('NicknameNotes')
+                .then((data) => {
+                    setEditorContent(data || ''); // Default to empty string if no data
+                    console.log('Data loaded for NicknameNotes:', data);
+                })
+                .catch((err) => {
+                    console.error('Error loading NicknameNotes:', err);
+                    setEditorContent(''); // Ensure we handle errors gracefully
+                });
+        }
+    }, [displayMode, loadStoredData, editorContent]);
+
     const handleAddEntry = () => {
         if (newEntry.firstPart.trim() && newEntry.secondPart.trim()) {
             const newEntryObject = {
@@ -50,7 +66,6 @@ function ParentNicknames({ onBack }) {
             setEntries([...entries, newEntryObject]);
             setNewEntry({ firstPart: '', secondPart: '' });  // Reset the input fields.
             setRadioSelection(''); // Reset radio selection
-
         }
     };
 
@@ -73,12 +88,40 @@ function ParentNicknames({ onBack }) {
         setEditingIndex(-1);
         setTempEntry({ firstPart: '', secondPart: '', category: '' }); // Reset the tempEntry completely
         setRadioSelection(''); // Reset radio selection
-
     };
 
-    const handleDropdownChange = (value) => {
-        setSelectedOption(value);
-        setDisplayMode(value === 'Notes' ? 'Notes' : 'List');
+    const handleDropdownChange = (value, dropdownType) => {
+        console.log(`${dropdownType} Dropdown changed to:`, value);
+
+        if (dropdownType === "Notes") {
+            setNotesOption(value);
+
+            if (value !== "Null" && displayMode === "Notes") {
+                setTimeout(() => {
+                    setDisplayMode("List");
+                    setSelectedOption(value);
+                    console.log(
+                        "Reverting to List mode and syncing selectedOption with NotesDropdown selection:",
+                        value
+                    );
+                }, 100);
+            }
+        } else if (dropdownType === "Device") {
+            setSelectedOption(value);
+
+            if (displayMode === "Notes") {
+                setTimeout(() => {
+                    setNotesOption(value);
+                    console.log(
+                        "Syncing NotesDropdown with DeviceDropdown selection:",
+                        value
+                    );
+                }, 100);
+            } else {
+                // Ensure DeviceDropdown can update independently in 'List' mode
+                console.log("DeviceDropdown updated independently:", value);
+            }
+        }
     };
 
     const onEditInit = (index, firstPart, secondPart) => {
@@ -88,13 +131,42 @@ function ParentNicknames({ onBack }) {
 
     const theme = {
         colors: {
-          primary: '#4A90E2', // Set the radio button color
+            primary: '#4A90E2', // Set the radio button color
         },
-      };
+    };
 
-      const handleBackOne = () => {
+    const handleBackOne = () => {
         setDisplayMode('List'); // Resets to device view
     };
+
+    const handleStateChange = () => {
+        console.log('Switching to Notes mode...');
+    
+        // Resetting necessary states when entering Notes
+        setNotesOption('Null'); // Or your desired default
+        setDisplayMode('Notes');
+    };
+
+    const handleSaveEditorContent = () => {
+        console.log('Attempting to save editor content:', editorContent);
+        
+        // Ensure editorContent is always a string before calling .trim()
+        const content = editorContent ? editorContent.toString() : ''; // Fallback to an empty string if undefined or null
+        
+        if (!content.trim()) {
+            Alert.alert('Warning', 'Editor content is empty!');
+            return;
+        }
+        
+        saveData('NicknamesNotes', content)
+            .then(() => {
+                console.log('Notes saved successfully:', content);
+                Alert.alert('Saved', 'Your notes have been saved!');
+            })
+            .catch((err) => console.error('Failed to save notes:', err));
+    };
+
+    
 
     return (
             <View style={{ padding: 20, width: '110%', height: '100%' }}>            
@@ -116,7 +188,10 @@ function ParentNicknames({ onBack }) {
             </View>
             <View style={{ position: 'relative', marginTop: '1.5%', bottom: '10%', flexDirection: 'row', marginVertical: 10  }}>
                 <View style={{ position:'relative', height: 65, width: '50%' }}>
-                    <DeviceDropdown selectedOption={selectedOption} onChange={handleDropdownChange} />
+                    <DeviceDropdown
+                        onChange={(value) => handleDropdownChange(value, "Device")}
+                        selectedOption={selectedOption}
+                    />
                 </View>
                 <RadioButton.Group onValueChange={newValue => setRadioSelection(newValue)} value={radioSelection} width='100%'>
                     <View style={{ flexDirection: 'column', position: 'relative', left: '40%' }}>
@@ -125,11 +200,11 @@ function ParentNicknames({ onBack }) {
                                 <View style={{ position: 'relative', bottom: '10%', transform: [{ scale: 0.50 }] }}>
                                     <RadioButton theme={theme} value="Pleasant" backgroundColor='white' />
                                 </View>
-                                <View style={{ position: 'relative', right: '35%' }}>
+                                <View style={{ position: 'relative', right: '15%' }}>
                                     <Text style={{ position: 'relative', bottom: '80%', fontSize: 10, textAlign: 'center', color: 'white' }}>Pleasantt</Text>
                                 </View>
                             </View>
-                            <View style={{ position: 'relative', right: '5%', alignItems: 'center' }}>  
+                            <View style={{ position: 'relative', left: '45%', alignItems: 'center' }}>  
                                 <View style={{ position: 'relative', bottom: '10%', transform: [{ scale: 0.50 }] }}>
                                     <RadioButton theme={theme} value="Snarky" backgroundColor='white' />
                                 </View>
@@ -144,15 +219,15 @@ function ParentNicknames({ onBack }) {
                                     <RadioButton theme={theme} backgroundColor='white' value="Playful" />
                                 </View>
                                 <View>
-                                    <Text style={{ position: 'relative', right:'40%', bottom: '120%', fontSize: 10, color: 'white' }}>Playfull</Text>
+                                    <Text style={{ position: 'relative', right:'25%', bottom: '120%', fontSize: 10, color: 'white' }}>Playfull</Text>
                                 </View>
                             </View>
-                            <View style={{ position: 'relative', left: '5%', alignItems: 'center' }}>  
+                            <View style={{ position: 'relative', left: '55%', alignItems: 'center' }}>  
                                 <View style={{ position: 'relative', bottom: '25%', left:'30%', transform: [{ scale: 0.50 }] }}>
                                     <RadioButton theme={theme} backgroundColor='white' value="Foul" />
                                 </View>
                                 <View>
-                                    <Text style={{ position: 'relative', left: '15%', bottom: '120%', fontSize: 10, color: 'white' }}>Foull</Text>
+                                    <Text style={{ position: 'relative', left: '25%', bottom: '120%', fontSize: 10, color: 'white' }}>Foull</Text>
                                 </View>
                             </View>
                         </View>
@@ -167,11 +242,29 @@ function ParentNicknames({ onBack }) {
                         onAdd={handleAddEntry}
                     />
                 </View>
-                <View style={{ position: 'relative', right: '40%', top: '18%', bottom: '5%', marginTop: '4%' }}>
-                            <View style={{ position:'relative', bottom:'75%', borderRadius:5, left:'2%' }}>
+                    <View>
+                        <TouchableOpacity
+                            style={{
+                            backgroundColor: 'silver',
+                            padding: 7,
+                            borderRadius: 5,
+                            borderColor: 'black',
+                            borderWidth: 1,
+                            alignItems: 'center',
+                            width: '35%',
+                            bottom: '10%',
+                            left:'32.5%'
+                            }}
+                            onPress={handleStateChange}
+                            >
+                            <Text style={{ color: 'black', fontSize: 16 }}>Notess</Text>
+                        </TouchableOpacity>  
+                    </View>
+                    <View style={{ position: 'relative', right: '40%', top: '18%', bottom: '5%', marginTop: '4%' }}>
+                            <View style={{ position:'relative', bottom:'135.5%', borderRadius:5, left:'2%' }}>
                                 <DeviceBackButton style={{ borderRadius: 15 }} onBack={onBack} />
                             </View>
-                            <View style={{ position:'relative', bottom:'125.5%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
+                            <View style={{ position:'relative', bottom:'185.5%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
                                 <Button
                                 title="Save"
                                 onPress={() => {
@@ -185,7 +278,7 @@ function ParentNicknames({ onBack }) {
                                 color="#2096F3" // Optional: Customize button color
                                 />
                             </View>
-                        </View>
+                    </View>
             </View>
                 </>
             ) : (
@@ -197,23 +290,20 @@ function ParentNicknames({ onBack }) {
                     <DeviceQuill editorContent={editorContent} setEditorContent={setEditorContent} storageKey="NicknamesNotes" />
                 <View>
                     <View style={{ marginBottom: '2.5%' }}> 
-                        <DeviceDropdown selectedOption={selectedOption} onChange={handleDropdownChange} />
+                        <NotesDropdown
+                            onChange={(value) => handleDropdownChange(value, "Notes")}
+                            selectedOption={notesOption}
+                        />
                     </View>
-                    <View style={{ position:'relative', top:'15%', width: '50%' }}>
-                                <Button
-                                    onPress={() => {
-                                    if (!editorContent.trim()) {
-                                    Alert.alert('Warning', 'Editor content is empty!');
-                                    return;
-                                    }
-                                    console.log('Saving content:', editorContent); // Debug log
-                                    }}
-                                    title="Save Notes"
-                                />
-                            </View>
-                            <View style={{ position:'relative', bottom:'10%', left:'20%' }}>
-                                <DeviceBackButton onPress={handleBackOne}/>
-                            </View>
+                    <View style={{ position:'relative', bottom:'6.5%', width: '50%', borderColor:'black', borderWidth:1, borderRadius:5 }}>
+                        <Button
+                            onPress={handleSaveEditorContent}
+                            title="Save Notes"
+                        />
+                    </View>
+                    <View style={{ position:'relative', bottom:'31.5%', left:'35%' }}>
+                        <DeviceBackButton onPress={handleBackOne}/>
+                    </View>
                 </View>
             </View>
             </>

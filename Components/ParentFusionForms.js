@@ -270,11 +270,11 @@ function ParentFusionForms({ onBack }) {
                             selectedOption={selectedOption}
                         />
                         </View>
-                        <View style={{ width:'47%', borderRadius:'50%', left:'53%', bottom:'19.5%' }}>
+                        <View style={{ width:'35%', borderRadius:'50%', left:'32.5%', top:'24%' }}>
                             <TouchableOpacity
                                 style={{
                                 backgroundColor: 'silver',
-                                padding: 12,
+                                padding: 7,
                                 borderRadius: 5,
                                 alignItems: 'center',
                                 borderColor:'black',

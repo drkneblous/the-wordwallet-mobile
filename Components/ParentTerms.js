@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { RadioButton } from 'react-native-paper'
 import DeviceBackButton from './DeviceBackButton'
 import DeviceDropdown from './DeviceDropdown'
+import NotesDropdown from './NotesDropdown'
 import TermsDefinition from './TermsDefinition'
 import TermsList from './TermsList'
 import TermsInput from './TermsInput'
 import DeviceQuill from './DeviceQuill'
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useStorage } from './StorageContext';
 
 function ParentTerms({ onBack }) {
     const [entries, setEntries] = useState([]);
     const [newEntry, setNewEntry] = useState({ firstPart: '', secondPart: '' });
     const [selectedOption, setSelectedOption] = useState('Create');
+    const [notesOption, setNotesOption] = useState('Null');
     const [displayMode, setDisplayMode] = useState('List');
     const [editingIndex, setEditingIndex] = useState(-1);
     const [editorContent, setEditorContent] = useState(''); // Rich editor content for Fusion Forms
@@ -35,6 +37,20 @@ function ParentTerms({ onBack }) {
             setLastSavedEntries(entries); // Update the last saved state
         }
     }, [entries, saveData, classIdentifier, lastSavedEntries]);
+
+
+    useEffect(() => {
+        if (displayMode === 'Notes') {
+            loadStoredData('TermsNotes')
+                .then((data) => {
+                    if (data !== editorContent) {
+                        setEditorContent(data || '');
+                        console.log('Data loaded for TermsNotes:', data);
+                    }
+                })
+                .catch((err) => console.error('Error loading TermsNotes:', err));
+        }
+    }, [displayMode, editorContent]);
 
     
     const handleAddEntry = () => {
@@ -74,9 +90,35 @@ function ParentTerms({ onBack }) {
         setRadioSelection('');
     };
 
-    const handleDropdownChange = (value) => {
-        setSelectedOption(value);
-        setDisplayMode(value === 'Notes' ? 'Notes' : 'List');
+    const handleDropdownChange = (value, dropdownType) => {
+        console.log(`${dropdownType} Dropdown changed to:`, value);
+    
+        if (dropdownType === "Notes") {
+            setNotesOption(value);
+    
+            if (value !== "Null" && displayMode === "Notes") {
+                setTimeout(() => {
+                    setDisplayMode("List");
+                    setSelectedOption(value);
+                    console.log(
+                        "Reverting to List mode and syncing selectedOption with NotesDropdown selection:",
+                        value
+                    );
+                }, 100);
+            }
+        } else if (dropdownType === "Device") {
+            setSelectedOption(value);
+    
+            if (displayMode === "Notes") {
+                setTimeout(() => {
+                    setNotesOption(value);
+                    console.log(
+                        "Syncing NotesDropdown with DeviceDropdown selection:",
+                        value
+                    );
+                }, 100);
+            }
+        }
     };
 
     const onEditInit = (index, firstPart, secondPart) => {
@@ -86,6 +128,14 @@ function ParentTerms({ onBack }) {
 
     const handleBackOne = () => {
         setDisplayMode('List'); // Resets to device view
+    };
+
+    const handleStateChange = () => {
+        console.log('Switching to Notes mode...');
+    
+        // Resetting necessary states when entering Notes
+        setNotesOption('Null'); // Or your desired default
+        setDisplayMode('Notes');
     };
 
 
@@ -122,7 +172,7 @@ function ParentTerms({ onBack }) {
                     <View style={{ flexDirection: 'column', position: 'relative', left: '40%' }}>
                         <View style={{ flexDirection: 'row' }}>
                             <View style={{ position: 'relative', right: '10%', alignItems: 'center' }}>
-                                <View style={{ position: 'relative', bottom: '10%', transform: [{ scale: 0.50 }] }}>
+                                <View style={{ position: 'relative', right:'25%', bottom: '10%', transform: [{ scale: 0.50 }] }}>
                                     <RadioButton theme={theme} value="Technical" backgroundColor='white' />
                                 </View>
                                 <View style={{ position: 'relative', right: '35%' }}>
@@ -140,19 +190,19 @@ function ParentTerms({ onBack }) {
                         </View>
                         <View style={{ flexDirection: 'row' }}>
                             <View style={{ position: 'relative', left: '5%', alignItems: 'center' }}>  
-                                <View style={{ position: 'relative', bottom: '25%', right:'10%', transform: [{ scale: 0.50 }] }}>
+                                <View style={{ position: 'relative', bottom: '25%', right:'30%', transform: [{ scale: 0.50 }] }}>
                                     <RadioButton theme={theme} backgroundColor='white' value="Social" />
                                 </View>
                                 <View>
                                     <Text style={{ position: 'relative', right:'40%', bottom: '120%', fontSize: 10, color: 'white' }}>Sociall</Text>
                                 </View>
                             </View>
-                            <View style={{ position: 'relative', left: '15%', alignItems: 'center' }}>  
+                            <View style={{ position: 'relative', left: '30%', alignItems: 'center' }}>  
                                 <View style={{ position: 'relative', bottom: '25%', left:'35%', transform: [{ scale: 0.50 }] }}>
                                     <RadioButton theme={theme} backgroundColor='white' value="Miscellaneous" />
                                 </View>
                                 <View>
-                                    <Text style={{ position: 'relative', left: '15%', bottom: '120%', fontSize: 10, color: 'white' }}>Misc</Text>
+                                    <Text style={{ position: 'relative', left: '30%', bottom: '120%', fontSize: 10, color: 'white' }}>Misc</Text>
                                 </View>
                             </View>
                         </View>
@@ -167,11 +217,29 @@ function ParentTerms({ onBack }) {
                         onAdd={handleAddEntry}
                     />
                 </View>
+                <View>
+                    <TouchableOpacity
+                        style={{
+                        backgroundColor: 'silver',
+                        padding: 7,
+                        borderRadius: 5,
+                        borderColor: 'black',
+                        borderWidth: 1,
+                        alignItems: 'center',
+                        width: '35%',
+                        bottom: '11%',
+                        left:'32.5%'
+                        }}
+                        onPress={handleStateChange}
+                    >
+                        <Text style={{ color: 'black', fontSize: 16 }}>Notess</Text>
+                    </TouchableOpacity>  
+                </View>
                 <View style={{ position: 'relative', right: '40%', top: '18%', bottom: '5%', marginTop: '4%' }}>
-                            <View style={{ position:'relative', bottom:'75%', borderRadius:5, left:'2%' }}>
+                            <View style={{ position:'relative', bottom:'135%', borderRadius:5, left:'2%' }}>
                                 <DeviceBackButton style={{ borderRadius: 15 }} onBack={onBack} />
                             </View>
-                            <View style={{ position:'relative', bottom:'125.5%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
+                            <View style={{ position:'relative', bottom:'185.5%', left:'113%', width:'30%', overflow:'hidden', borderRadius:5, borderWidth:1, borderColor:'black' }}>
                                 <Button
                                 title="Save"
                                 onPress={() => {
@@ -195,11 +263,13 @@ function ParentTerms({ onBack }) {
                     <Text>Write down your terms notes and thoughts here</Text>
                 </View>
                     <DeviceQuill editorConent={editorContent} setEditorContent={setEditorContent} storageKey="TermsNotes" />
-                <View>
                     <View style={{ marginBottom: '2.5%' }}> 
-                        <DeviceDropdown selectedOption={selectedOption} onChange={handleDropdownChange} />
+                        <NotesDropdown
+                            onChange={(value) => handleDropdownChange(value, "Notes")}
+                            selectedOption={notesOption}
+                        />
                     </View>
-                    <View style={{ position:'relative', top:'15%', width: '50%' }}>
+                            <View style={{ position:'relative', width: '50%', bottom:'1.5%' }}>
                                 <Button
                                     onPress={() => {
                                     if (!editorContent.trim()) {
@@ -211,11 +281,10 @@ function ParentTerms({ onBack }) {
                                     title="Save Notes"
                                 />
                             </View>
-                            <View style={{ position:'relative', bottom:'10%', left:'20%' }}>
+                            <View style={{ position:'relative', bottom:'7.5%', left:'35%' }}>
                                 <DeviceBackButton onPress={handleBackOne}/>
                             </View>
-                </View>
-                </View>
+                    </View>
             </>
             )}
         </View>
