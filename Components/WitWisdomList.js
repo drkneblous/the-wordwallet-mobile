@@ -1,64 +1,135 @@
 import React from 'react';
-import { RadioButton } from 'react-native-paper'
+import { RadioButton } from 'react-native-paper';
 import { View, Text, TextInput, Button, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 
-function WitWisdomList({ entries, onEditInit, onDelete, onEditSave, editingIndex, editTempEntry, setEditTempEntry }) {
+function WitWisdomList({
+    entries,
+    onEditInit,
+    onDelete,
+    onEditSave,
+    editingIndex,
+    editTempEntry,
+    setEditTempEntry
+}) {
     return (
         <ScrollView style={styles.listContainer}>
-           {entries.map((entry, index) => {
-    const [firstPart, secondPart, category] = entry.text.split(' : ');
+            {entries.map((entry, index) => {
+                const [firstPart, secondPart, category] = entry.text.split(' : ');
 
-    return (
-        <View key={entry.id} style={styles.entryItem}>
-            {editingIndex === index ? (
-                <View style={styles.editControls}>
-                    <TextInput
-                        style={styles.input}
-                        value={editTempEntry.firstPart}
-                        onChangeText={(text) => setEditTempEntry({ ...editTempEntry, firstPart: text })}
-                        placeholder="Enter witticism or wisdom"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        value={editTempEntry.secondPart}
-                        onChangeText={(text) => setEditTempEntry({ ...editTempEntry, secondPart: text })}
-                        placeholder="Enter author"
-                    />
-                    <RadioButton.Group onValueChange={newValue => setEditTempEntry({...editTempEntry, category: newValue})} value={editTempEntry.category || category}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <RadioButton color='blue' value="Wit" />
-                            <Text>Wit</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <RadioButton color='green' value="Wisdom" />
-                            <Text>Wisdom</Text>
-                        </View>
-                    </RadioButton.Group>
-                    <Button title="Save" onPress={() => onEditSave(entry.id)} />
-                </View>
-            ) : (
-                <View style={styles.wordDisplay}>
-                    <Text style={[styles.wordText, { color: entry.style.color }]}>
-                        {index + 1}. "{firstPart}" - {secondPart} {entry.category && `(${entry.category})`}
-                    </Text>
-                    <View style={styles.controlButtons}>
-                        <View>
-                            <TouchableOpacity onPress={() => onEditInit(index, firstPart, secondPart, category)} style={{ backgroundColor: "#2096F3", padding:6, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1   }}>
-                                <Text style={{fontSize:14, color:'white' }}>Ed</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.gap} />
-                        <View>
-                            <TouchableOpacity onPress={() => onDelete(entry.id)}  style={{ backgroundColor: '#ff6347', padding:6, overFlow:'hidden', borderRadius:10, borderColor:'black', borderWidth:1 }}>
-                                <Text style={{fontSize:14, color:'white' }}>Dell</Text>
-                            </TouchableOpacity>
-                        </View>
+                // Determine color based on textType
+                const getColorForTextType = (textType) => {
+                    switch (textType) {
+                        case 'Create':
+                            return '#8a47ff';
+                        case 'Discovered':
+                            return '#2096F3';
+                        case 'Common':
+                            return '#ff6347';
+                        default:
+                            return '#000'; // Default to black
+                    }
+                };
+
+                const entryColor = getColorForTextType(entry.textType);
+
+                return (
+                    <View key={entry.id} style={styles.entryItem}>
+                        {editingIndex === index ? (
+                            <View style={styles.editControls}>
+                                {/* First Part Input */}
+                                <TextInput
+                                    style={styles.input}
+                                    value={editTempEntry.firstPart}
+                                    onChangeText={(text) =>
+                                        setEditTempEntry({ ...editTempEntry, firstPart: text })
+                                    }
+                                    placeholder="Enter witticism or wisdom"
+                                />
+
+                                {/* Second Part Input */}
+                                <TextInput
+                                    style={styles.input}
+                                    value={editTempEntry.secondPart}
+                                    onChangeText={(text) =>
+                                        setEditTempEntry({ ...editTempEntry, secondPart: text })
+                                    }
+                                    placeholder="Enter author"
+                                />
+
+                                {/* Category Radio Buttons (Wit/Wisdom) */}
+                                <Text>Category:</Text>
+                                <RadioButton.Group
+                                    onValueChange={(newValue) =>
+                                    setEditTempEntry({ ...editTempEntry, category: newValue })
+                                }
+                                    value={editTempEntry.category || category}
+                                >
+                                <View style={styles.radioGroup}>
+                                    <RadioButton value="Wit" />
+                                    <Text>Wit</Text>
+                                </View>
+                                <View style={styles.radioGroup}>
+                                    <RadioButton value="Wisdom" />
+                                    <Text>Wisdom</Text>
+                                </View>
+                                </RadioButton.Group>
+                                <Text>Text Type:</Text>
+                                <RadioButton.Group
+                                    onValueChange={(newValue) =>
+                                    setEditTempEntry({ ...editTempEntry, textType: newValue })
+                                    }
+                                    value={editTempEntry.textType || entry.textType}
+                                >
+                                <View style={styles.radioGroup}>
+                                    <RadioButton value="Create" />
+                                    <Text>Create</Text>
+                                </View>
+                                <View style={styles.radioGroup}>
+                                    <RadioButton value="Discovered" />
+                                    <Text>Discovered</Text>
+                                </View>
+                                <View style={styles.radioGroup}>
+                                    <RadioButton value="Common" />
+                                    <Text>Common</Text>
+                                </View>
+                                </RadioButton.Group>
+                                <Button title="Save" onPress={() => onEditSave(entry.id)} />
+                            </View>
+                        ) : (
+                            <View style={styles.wordDisplay}>
+                                {/* Display Text */}
+                                <Text
+                                    style={[
+                                    styles.wordText,
+                                    { color: getColorForTextType(entry.textType) } // Use dynamic color
+                                ]}
+                                >
+                                    {index + 1}. "{firstPart}" - {secondPart} {entry.category && `(${entry.category})`}
+                                </Text>
+
+                                {/* Control Buttons */}
+                                <View style={styles.controlButtons}>
+                                <TouchableOpacity
+                                    onPress={() =>
+                                    onEditInit(index, firstPart, secondPart, entry.category, entry.textType)
+                                }
+                                    style={styles.editButton}
+                                >
+                                        <Text style={styles.buttonText}>Ed</Text>
+                                </TouchableOpacity>
+                                    <View style={styles.gap} />
+                                    <TouchableOpacity
+                                        onPress={() => onDelete(entry.id)}
+                                        style={styles.deleteButton}
+                                    >
+                                        <Text style={styles.buttonText}>Del</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
                     </View>
-                </View>
-            )}
-        </View>
-    );
-})}
+                );
+            })}
         </ScrollView>
     );
 }
@@ -66,7 +137,7 @@ function WitWisdomList({ entries, onEditInit, onDelete, onEditSave, editingIndex
 const styles = StyleSheet.create({
     listContainer: {
         flex: 1,
-        padding: 10,
+        padding: 10
     },
     entryItem: {
         flexDirection: 'row',
@@ -81,29 +152,51 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         justifyContent: 'center',
-        alignItems: 'flex-start',
+        alignItems: 'flex-start'
     },
     input: {
         width: '100%',
         marginBottom: 5,
         borderWidth: 1,
         borderColor: '#ccc',
-        padding: 10,
+        padding: 10
+    },
+    radioGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 5
     },
     wordDisplay: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'center'
     },
     wordText: {
-        flex: 1,
+        flex: 1
     },
     controlButtons: {
-        flexDirection: 'row',
+        flexDirection: 'row'
     },
-
+    editButton: {
+        backgroundColor: '#2096F3',
+        padding: 6,
+        borderRadius: 10,
+        borderColor: 'black',
+        borderWidth: 1
+    },
+    deleteButton: {
+        backgroundColor: '#ff6347',
+        padding: 6,
+        borderRadius: 10,
+        borderColor: 'black',
+        borderWidth: 1
+    },
+    buttonText: {
+        fontSize: 14,
+        color: 'white'
+    },
     gap: {
-        width: 2, // Small gap between the "Edit" and "Delete" buttons
+        width: 5
     }
 });
 

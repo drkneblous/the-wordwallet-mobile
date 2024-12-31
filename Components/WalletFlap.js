@@ -185,7 +185,7 @@ function WalletFlap() {
                                     />
                                
                                     <InputArea onAddWord={addStyledWord} selectedCard={selectedCard} />
-                                  <View style={{position:'relative', bottom:'14%', left:'31%', overflow:'hidden', borderRadius:5 }}>
+                                  <View style={{ position:'relative', bottom:'16.25%', right:'28.5%', overflow:'hidden', borderRadius:5, borderColor:'black', borderWidth:1 }}>
                                     <Button
                                       title="Save List"
                                       onPress={() => {
@@ -248,6 +248,8 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         marginTop: 10,
         backgroundColor: 'rgb(36, 95, 141)',
+        borderColor:'black',
+        borderWidth:1
     },
 });
 

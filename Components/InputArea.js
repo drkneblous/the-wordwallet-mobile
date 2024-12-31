@@ -34,6 +34,8 @@ function InputArea({ onAddWord, selectedCard }) {
 
 const styles = StyleSheet.create({
     inputArea: {
+        position:'relative',
+        bottom:'2%',
         height: '23%',
         width: '100%',
         flexDirection: 'column',
@@ -60,15 +62,14 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         position: 'relative:',
-        right:'35%',
+        left:'31%',
         bottom:'5%',
         width: '30%',
         marginTop: '5%',
         borderRadius: 5,
-        borderWith:1,
+        borderWidth:1,
         borderColor: 'black',
         overflow: 'hidden', // Helps to maintain border radius on Button
-        position: 'relative',
     },
 });
 

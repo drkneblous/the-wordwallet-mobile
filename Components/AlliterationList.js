@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
     },
     wordText: {
         flex: 1, // Allow text to take up available space, ensuring it doesn't push buttons off screen
+        textWrap:'wrap'
     },
     buttonContainer: {
         flexDirection: 'row',

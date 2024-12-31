@@ -260,6 +260,8 @@ function ParentFusionForms({ onBack }) {
                             editingIndex={editingIndex}
                             tempTerm={tempTerm}
                             setTempTerm={setTempTerm}
+                            selectedOption={selectedOption}
+                            setSelectedOption={setSelectedOption}
                         />
                     </View>
 

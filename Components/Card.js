@@ -45,7 +45,9 @@ const styles = StyleSheet.create({
 
     card: {
         width: '95%', // Make the card wider to appear more elongated
-        height: 40, // Fixed height to make it rectangular
+        height: 45, // Fixed height to make it rectangular
+        borderColor:'black',
+        borderWidth:1,
         borderRadius: 10, // Rounded corners
         justifyContent: 'center',
         alignItems: 'center',

@@ -114,10 +114,14 @@ const styles = StyleSheet.create({
     controlButtonsEdit: {
         overflow: 'hidden',
         borderRadius: 10,
+        borderColor:'black',
+        borderWidth:1
     },
     controlButtonsDelete: {
         overflow: 'hidden',
         borderRadius: 10,
+        borderColor:'black',
+        borderWidth:1
     },
 });
 

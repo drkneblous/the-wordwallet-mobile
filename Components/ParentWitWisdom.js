@@ -55,13 +55,16 @@ function ParentWitWisdom({ onBack }) {
         if (newEntry.firstPart.trim() && newEntry.secondPart.trim()) {
             const newEntryObject = {
                 id: Date.now().toString(),
-                text: `${newEntry.firstPart} : ${newEntry.secondPart}`, // No category appended
+                text: `${newEntry.firstPart} : ${newEntry.secondPart}`,
                 style: {
-                    color: selectedOption === 'Common' ? '#ff6347' : selectedOption === 'Discovered' ? "#2096F3"  : '#8a47ff',
+                    color: selectedOption === 'Common' ? '#ff6347' : 
+                           selectedOption === 'Discovered' ? "#2096F3" : 
+                           '#8a47ff',
                 },
-                category: radioSelection, // Save the category separately
+                textType: selectedOption, // Add textType directly
+                category: radioSelection, // Save category
             };
-            setEntries([...entries, newEntryObject]); // Add the new entry
+            setEntries([...entries, newEntryObject]);
             setNewEntry({ firstPart: '', secondPart: '' }); // Reset input fields
             setRadioSelection(''); // Reset radio selection
         }
@@ -76,15 +79,21 @@ function ParentWitWisdom({ onBack }) {
             if (entry.id === id) {
                 return {
                     ...entry,
-                    text: `${tempEntry.firstPart} : ${tempEntry.secondPart}`, // Update text
-                    category: tempEntry.category, // Update category directly from tempEntry
+                    text: `${tempEntry.firstPart} : ${tempEntry.secondPart}`,
+                    textType: tempEntry.textType || entry.textType, // Update textType
+                    category: tempEntry.category || entry.category, // Update category
+                    style: {
+                        color: tempEntry.textType === 'Common' ? '#ff6347' : 
+                               tempEntry.textType === 'Discovered' ? "#2096F3" : 
+                               '#8a47ff',
+                    },
                 };
             }
             return entry;
         });
         setEntries(updatedEntries);
         setEditingIndex(-1); // Reset editing index
-        setTempEntry({ firstPart: '', secondPart: '', category: '' }); // Clear tempEntry after saving
+        setTempEntry({ firstPart: '', secondPart: '', textType: '', category: '' }); // Clear tempEntry
     };
 
     const handleDropdownChange = (value, dropdownType) => {
@@ -92,20 +101,19 @@ function ParentWitWisdom({ onBack }) {
     
         if (dropdownType === "Notes") {
             setNotesOption(value);
-    
             if (value !== "Null" && displayMode === "Notes") {
-                setDisplayMode("List");  // Set to List mode after Notes selection
-                setSelectedOption(value); // Sync selectedOption with NotesDropdown value
-                console.log("Syncing selectedOption with NotesDropdown selection:", value);
+                setDisplayMode("List");
+                setSelectedOption(value); // Sync `selectedOption` for textType
+                console.log("Syncing selectedOption with NotesDropdown:", value);
             }
         } else if (dropdownType === "Device") {
             if (displayMode === "List") {
-                setSelectedOption(value); // Only set selectedOption for Device dropdown in List mode
+                setSelectedOption(value); // Update textType for List mode
             }
     
             if (displayMode === "Notes") {
-                setNotesOption(value);  // Sync NotesDropdown with DeviceDropdown selection
-                console.log("Syncing NotesDropdown with DeviceDropdown selection:", value);
+                setNotesOption(value); // Sync NotesDropdown with DeviceDropdown
+                console.log("Syncing NotesDropdown with DeviceDropdown:", value);
             }
         }
     };
