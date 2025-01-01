@@ -55,45 +55,54 @@ function WitWisdomList({
                                     }
                                     placeholder="Enter author"
                                 />
-
-                                {/* Category Radio Buttons (Wit/Wisdom) */}
+                               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 10 }}>
+                                {/* Category Column */}
+                                <View style={{ marginHorizontal: 20 }}>
                                 <Text>Category:</Text>
                                 <RadioButton.Group
                                     onValueChange={(newValue) =>
                                     setEditTempEntry({ ...editTempEntry, category: newValue })
-                                }
+                                    }
                                     value={editTempEntry.category || category}
                                 >
-                                <View style={styles.radioGroup}>
-                                    <RadioButton value="Wit" />
-                                    <Text>Wit</Text>
-                                </View>
-                                <View style={styles.radioGroup}>
-                                    <RadioButton value="Wisdom" />
-                                    <Text>Wisdom</Text>
-                                </View>
+                                    <View style={styles.radioGroup}>
+                                        <RadioButton value="Wit" />
+                                            <Text>Wit</Text>
+                                    </View>
+                                    <View style={styles.radioGroup}>
+                                        <RadioButton value="Wisdom" />
+                                            <Text>Wisdom</Text>
+                                    </View>
                                 </RadioButton.Group>
+                                </View>
+
+                                {/* Text Column */}
+                                <View style={{ marginHorizontal: 20 }}>
                                 <Text>Text Type:</Text>
                                 <RadioButton.Group
                                     onValueChange={(newValue) =>
                                     setEditTempEntry({ ...editTempEntry, textType: newValue })
-                                    }
+                                }   
                                     value={editTempEntry.textType || entry.textType}
                                 >
-                                <View style={styles.radioGroup}>
-                                    <RadioButton value="Create" />
-                                    <Text>Create</Text>
-                                </View>
-                                <View style={styles.radioGroup}>
-                                    <RadioButton value="Discovered" />
-                                    <Text>Discovered</Text>
-                                </View>
-                                <View style={styles.radioGroup}>
-                                    <RadioButton value="Common" />
-                                    <Text>Common</Text>
-                                </View>
+                                    <View style={styles.radioGroup}>
+                                        <RadioButton value="Create" />
+                                            <Text style={{ color:"#8a47ff" }}>Createe</Text>
+                                    </View>
+                                    <View style={styles.radioGroup}>
+                                        <RadioButton value="Discovered" />
+                                            <Text style={{ color: "#2096F3" }}>Discoveredd</Text>
+                                    </View>
+                                    <View style={styles.radioGroup}>
+                                        <RadioButton value="Common" />
+                                            <Text style={{ color:"#ff6347" }}>Common</Text>
+                                    </View>
                                 </RadioButton.Group>
-                                <Button title="Save" onPress={() => onEditSave(entry.id)} />
+                                </View>
+                                </View>
+                                <View style={{ overFLow:'hidden', borderColor:'black', borderWidth:1, borderRadius:5, marginBottom:'5%', alignItems: 'center'  }}>
+                                    <Button title="Save" onPress={() => onEditSave(entry.id)} />
+                                </View>
                             </View>
                         ) : (
                             <View style={styles.wordDisplay}>
@@ -197,6 +206,11 @@ const styles = StyleSheet.create({
     },
     gap: {
         width: 5
+    },
+
+    gapTwo:{
+
+        width:20
     }
 });
 
