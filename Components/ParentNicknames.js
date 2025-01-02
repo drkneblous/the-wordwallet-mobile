@@ -57,14 +57,17 @@ function ParentNicknames({ onBack }) {
         if (newEntry.firstPart.trim() && newEntry.secondPart.trim()) {
             const newEntryObject = {
                 id: Date.now().toString(),
-                text: `${newEntry.firstPart} : ${newEntry.secondPart}`, // No category appended
+                text: `${newEntry.firstPart} : ${newEntry.secondPart}`,
                 style: {
-                    color: selectedOption === 'Common' ? '#ff6347' : selectedOption === 'Discovered' ? "#2096F3" : '#8a47ff'
+                    color: selectedOption === 'Common' ? 'green' : 
+                           selectedOption === 'Discovered' ? "#2096F3" : 
+                           '#8a47ff',
                 },
-                category: radioSelection,
+                textType: selectedOption, // Add textType directly
+                category: radioSelection, // Save category
             };
             setEntries([...entries, newEntryObject]);
-            setNewEntry({ firstPart: '', secondPart: '' });  // Reset the input fields.
+            setNewEntry({ firstPart: '', secondPart: '' }); // Reset input fields
             setRadioSelection(''); // Reset radio selection
         }
     };
@@ -74,55 +77,49 @@ function ParentNicknames({ onBack }) {
     };
 
     const handleEditSave = (id) => {
-        const updatedEntries = entries.map(entry => {
+        const updatedEntries = entries.map((entry) => {
             if (entry.id === id) {
                 return {
                     ...entry,
-                    text: `${tempEntry.firstPart} : ${tempEntry.secondPart}`, // Remove category from here
-                    category: tempEntry.category || entry.category, // Only update the category field
+                    text: `${tempEntry.firstPart} : ${tempEntry.secondPart}`,
+                    textType: tempEntry.textType || entry.textType, // Update textType
+                    category: tempEntry.category || entry.category, // Update category
+                    style: {
+                        color: tempEntry.textType === 'Common' ? '#ff6347' : 
+                               tempEntry.textType === 'Discovered' ? "#2096F3" : 
+                               '#8a47ff',
+                    },
                 };
             }
             return entry;
         });
         setEntries(updatedEntries);
-        setEditingIndex(-1);
-        setTempEntry({ firstPart: '', secondPart: '', category: '' }); // Reset the tempEntry completely
-        setRadioSelection(''); // Reset radio selection
+        setEditingIndex(-1); // Reset editing index
+        setTempEntry({ firstPart: '', secondPart: '', textType: '', category: '' }); // Clear tempEntry
     };
 
     const handleDropdownChange = (value, dropdownType) => {
         console.log(`${dropdownType} Dropdown changed to:`, value);
-
+    
         if (dropdownType === "Notes") {
             setNotesOption(value);
-
             if (value !== "Null" && displayMode === "Notes") {
-                setTimeout(() => {
-                    setDisplayMode("List");
-                    setSelectedOption(value);
-                    console.log(
-                        "Reverting to List mode and syncing selectedOption with NotesDropdown selection:",
-                        value
-                    );
-                }, 100);
+                setDisplayMode("List");
+                setSelectedOption(value); // Sync `selectedOption` for textType
+                console.log("Syncing selectedOption with NotesDropdown:", value);
             }
         } else if (dropdownType === "Device") {
-            setSelectedOption(value);
-
+            if (displayMode === "List") {
+                setSelectedOption(value); // Update textType for List mode
+            }
+    
             if (displayMode === "Notes") {
-                setTimeout(() => {
-                    setNotesOption(value);
-                    console.log(
-                        "Syncing NotesDropdown with DeviceDropdown selection:",
-                        value
-                    );
-                }, 100);
-            } else {
-                // Ensure DeviceDropdown can update independently in 'List' mode
-                console.log("DeviceDropdown updated independently:", value);
+                setNotesOption(value); // Sync NotesDropdown with DeviceDropdown
+                console.log("Syncing NotesDropdown with DeviceDropdown:", value);
             }
         }
     };
+
 
     const onEditInit = (index, firstPart, secondPart) => {
         setEditingIndex(index);
@@ -204,12 +201,12 @@ function ParentNicknames({ onBack }) {
                                     <Text style={{ position: 'relative', bottom: '80%', fontSize: 10, textAlign: 'center', color: 'white' }}>Pleasantt</Text>
                                 </View>
                             </View>
-                            <View style={{ position: 'relative', left: '45%', alignItems: 'center' }}>  
+                            <View style={{ position: 'relative', left: '50%', alignItems: 'center' }}>  
                                 <View style={{ position: 'relative', bottom: '10%', transform: [{ scale: 0.50 }] }}>
-                                    <RadioButton theme={theme} value="Snarky" backgroundColor='white' />
+                                    <RadioButton theme={theme} value="Snide" backgroundColor='white' />
                                 </View>
                                 <View>
-                                    <Text style={{ position: 'relative', right: '5%', bottom: '80%', fontSize: 10, color: 'white' }}>Snarkyy</Text>
+                                    <Text style={{ position: 'relative', right: '5%', bottom: '80%', fontSize: 10, color: 'white' }}>Snidee</Text>
                                 </View>
                             </View>
                         </View>
@@ -289,7 +286,7 @@ function ParentNicknames({ onBack }) {
                 </View>
                     <DeviceQuill editorContent={editorContent} setEditorContent={setEditorContent} storageKey="NicknamesNotes" />
                 <View>
-                    <View style={{ marginBottom: '2.5%' }}> 
+                    <View style={{ position:'relative', bottom:'2%', marginBottom: '2.5%' }}> 
                         <NotesDropdown
                             onChange={(value) => handleDropdownChange(value, "Notes")}
                             selectedOption={notesOption}

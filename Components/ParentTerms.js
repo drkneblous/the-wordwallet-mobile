@@ -39,84 +39,84 @@ function ParentTerms({ onBack }) {
     }, [entries, saveData, classIdentifier, lastSavedEntries]);
 
 
-    useEffect(() => {
-        if (displayMode === 'Notes') {
-            loadStoredData('TermsNotes')
-                .then((data) => {
-                    if (data !== editorContent) {
-                        setEditorContent(data || '');
+      useEffect(() => {
+            if (displayMode === 'Notes' && editorContent === '') { // Only load content if it's empty
+                loadStoredData('TermsNotes')
+                    .then((data) => {
+                        setEditorContent(data || ''); // Set content once
                         console.log('Data loaded for TermsNotes:', data);
-                    }
-                })
-                .catch((err) => console.error('Error loading TermsNotes:', err));
-        }
-    }, [displayMode, editorContent]);
+                    })
+                    .catch((err) => console.error('Error loading TermsNotes:', err));
+            }
+        }, [displayMode, loadStoredData, editorContent]); // Added editorContent as a dependency
+
 
     
-    const handleAddEntry = () => {
-        if (newEntry.firstPart.trim() && newEntry.secondPart.trim()) {
-            const newEntryObject = {
-                id: Date.now().toString(),
-                text: `${newEntry.firstPart} : ${newEntry.secondPart}`, // No category appended
-                style: {
-                    color: selectedOption === 'Common' ? '#ff6347' : selectedOption === 'Discovered' ? "#2096F3" : '#8a47ff'
-                },
-                category: radioSelection,
-            };
-            setEntries([...entries, newEntryObject]);
-            setNewEntry({ firstPart: '', secondPart: '' });  // Reset the input fields.
-            setRadioSelection(''); // Reset radio selection
-        }
-    };
+        const handleAddEntry = () => {
+            if (newEntry.firstPart.trim() && newEntry.secondPart.trim()) {
+                const newEntryObject = {
+                    id: Date.now().toString(),
+                    text: `${newEntry.firstPart} : ${newEntry.secondPart}`,
+                    style: {
+                        color: selectedOption === 'Common' ? 'green' : 
+                               selectedOption === 'Discovered' ? "#2096F3" : 
+                               '#8a47ff',
+                    },
+                    textType: selectedOption, // Add textType directly
+                    category: radioSelection, // Save category
+                };
+                setEntries([...entries, newEntryObject]);
+                setNewEntry({ firstPart: '', secondPart: '' }); // Reset input fields
+                setRadioSelection(''); // Reset radio selection
+            }
+        };
 
     const handleDelete = (id) => {
         setEntries(entries.filter(entry => entry.id !== id));
     };
 
     const handleEditSave = (id) => {
-        const updatedEntries = entries.map(entry => {
+        const updatedEntries = entries.map((entry) => {
             if (entry.id === id) {
                 return {
                     ...entry,
-                    text: `${tempEntry.firstPart} : ${tempEntry.secondPart}`, // Remove category from here
-                    category: tempEntry.category || entry.category, // Only update the category field
+                    text: `${tempEntry.firstPart} : ${tempEntry.secondPart}`,
+                    textType: tempEntry.textType || entry.textType, // Ensure textType is updated
+                    category: tempEntry.category || entry.category, // Ensure category is updated
+                    style: {
+                        color: tempEntry.textType === 'Common' ? 'green' : 
+                               tempEntry.textType === 'Discovered' ? "#2096F3" : 
+                               '#8a47ff',
+                    },
                 };
             }
             return entry;
         });
         setEntries(updatedEntries);
-        setEditingIndex(-1);
-        setTempEntry({ firstPart: '', secondPart: '', category: '' }); // Reset the tempEntry completely
-        setRadioSelection('');
+        setEditingIndex(-1); // Reset editing index
+        setTempEntry({ firstPart: '', secondPart: '', textType: '', category: '' }); // Clear tempEntry
     };
+
 
     const handleDropdownChange = (value, dropdownType) => {
         console.log(`${dropdownType} Dropdown changed to:`, value);
     
         if (dropdownType === "Notes") {
             setNotesOption(value);
-    
             if (value !== "Null" && displayMode === "Notes") {
-                setTimeout(() => {
-                    setDisplayMode("List");
-                    setSelectedOption(value);
-                    console.log(
-                        "Reverting to List mode and syncing selectedOption with NotesDropdown selection:",
-                        value
-                    );
-                }, 100);
+                setDisplayMode("List");
+                setSelectedOption(value); // Sync `selectedOption` with NotesDropdown
+                console.log("Syncing selectedOption with NotesDropdown:", value);
             }
         } else if (dropdownType === "Device") {
-            setSelectedOption(value);
+            // Set the selectedOption in both modes (List and Notes)
+            setSelectedOption(value); // Update textType for Device Dropdown
+            console.log("Syncing DeviceDropdown with selectedOption:", value);
     
+            // Sync NotesDropdown with DeviceDropdown if needed
             if (displayMode === "Notes") {
-                setTimeout(() => {
-                    setNotesOption(value);
-                    console.log(
-                        "Syncing NotesDropdown with DeviceDropdown selection:",
-                        value
-                    );
-                }, 100);
+                setNotesOption(value);
+                console.log("Syncing NotesDropdown with DeviceDropdown:", value);
             }
         }
     };
@@ -166,7 +166,8 @@ function ParentTerms({ onBack }) {
             </View>
             <View style={{ position: 'relative', marginTop: '1.5%', bottom: '10%', flexDirection: 'row', marginVertical: 10  }}>
                 <View style={{ position:'relative', height: 65, width: '50%' }}>
-                    <DeviceDropdown selectedOption={selectedOption} onChange={handleDropdownChange} />
+                    <DeviceDropdown onChange={(value) => handleDropdownChange(value, "Device")}
+                                selectedOption={selectedOption} />
                 </View>
                 <RadioButton.Group onValueChange={newValue => setRadioSelection(newValue)} value={radioSelection} width='100%'>
                     <View style={{ flexDirection: 'column', position: 'relative', left: '40%' }}>

@@ -52,7 +52,7 @@ function ParentImagery ({ onBack }) {
             const newFusionEntry = { 
                 id: Date.now().toString(),
                 text: newFusion,  // Ensure 'text' field is correctly set
-                style: { color: selectedOption === 'Common' ? '#ff6347' : selectedOption === 'Discovered' ? "#2096F3" : '#8a47ff' },
+                style: { color: selectedOption === 'Common' ? 'green' : selectedOption === 'Discovered' ? "#2096F3" : '#8a47ff' },
                 category: selectedOption,
                 type: 'fusion' 
             };

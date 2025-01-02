@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     gap: {
-        width: 2, // Small gap between the "Edit" and "Delete" buttons
+        width: 5, // Small gap between the "Edit" and "Delete" buttons
     }
 });
 

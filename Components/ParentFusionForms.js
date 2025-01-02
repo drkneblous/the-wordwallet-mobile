@@ -126,18 +126,20 @@ function ParentFusionForms({ onBack }) {
         });
     };
 
-    const onEditSave = (id) => {
+    const onEditSave = (id, localSelectedOption) => {
         setFusions((prevFusions) => {
             const updatedFusions = prevFusions.map((fusion) =>
-                fusion.id === id ? { ...fusion, text: tempTerm } : fusion
+                fusion.id === id ? { ...fusion, text: tempTerm, category: localSelectedOption } : fusion
             );
             console.log('Saved edits for fusion with ID:', id, 'Updated fusions:', updatedFusions);
             return updatedFusions;
         });
         setEditingIndex(-1);
         setTempTerm('');
+        // Do NOT update selectedOption here. This ensures the parent dropdown remains unchanged.
     };
 
+    
     const handleAddFusion = () => {
         if (newFusion.trim()) {
             const newFusionEntry = {
@@ -146,7 +148,7 @@ function ParentFusionForms({ onBack }) {
                 style: {
                     color:
                         selectedOption === 'Common'
-                            ? '#ff6347'
+                            ? 'green'
                             : selectedOption === 'Discovered'
                             ? '#2096F3'
                             : '#8a47ff',
@@ -341,19 +343,19 @@ function ParentFusionForms({ onBack }) {
                         }}
                         storageKey="FusionNotes"
                     />
-                    <View style={{ marginBottom: '2.5%' }}> 
+                    <View style={{ position:'relative', bottom:'1%', marginBottom: '2.5%' }}> 
                         <NotesDropdown
                             onChange={(value) => handleDropdownChange(value, "Notes")}
                             selectedOption={notesOption}
                         />
                     </View>
-                    <View style={{ position:'relative', bottom:'1.5%', width: '50%', borderRadius: 50 }}>
+                    <View style={{ position:'relative', bottom:'1.75%', width: '50%', borderRadius: 50 }}>
                         <Button
                             onPress={handleSaveEditorContent}
                             title="Save Notes"
                         />
                     </View>
-                    <View style={{ position:'relative', left:'35%', bottom: '7.25%' }}>
+                    <View style={{ position:'relative', left:'35%', bottom: '7.75%' }}>
                         <DeviceBackButton onPress={handleBackOne}/>
                     </View>
                 </View>

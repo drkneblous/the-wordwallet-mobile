@@ -73,7 +73,7 @@ function ParentAlliteration({ onBack }) {
             return;
         }
         const newAlliterationStyle = {
-            color: selectedOption === 'Common' ? '#ff6347' : selectedOption === 'Discovered' ? "#2096F3": '#8a47ff',
+            color: selectedOption === 'Common' ? 'green' : selectedOption === 'Discovered' ? "#2096F3": '#8a47ff',
         };
         const newAlliteration = {
             term: inputAlliteration,

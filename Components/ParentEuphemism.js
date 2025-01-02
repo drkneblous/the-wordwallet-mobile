@@ -39,7 +39,7 @@ function ParentEuphemism({ onBack }) {
             const newEntryObject = {
                 id: Date.now().toString(),
                 text: `${newEntry.firstPart} : ${newEntry.secondPart}`,
-                style: { color: selectedOption === 'Common' ? '#ff6347' : selectedOption === 'Discovered' ? "#2096F3" : '#8a47ff' },
+                style: { color: selectedOption === 'Common' ? 'green' : selectedOption === 'Discovered' ? "#2096F3" : '#8a47ff' },
                 category: selectedOption,
             };
             setEntries([...entries, newEntryObject]);

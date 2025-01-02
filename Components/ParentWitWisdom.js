@@ -57,7 +57,7 @@ function ParentWitWisdom({ onBack }) {
                 id: Date.now().toString(),
                 text: `${newEntry.firstPart} : ${newEntry.secondPart}`,
                 style: {
-                    color: selectedOption === 'Common' ? '#ff6347' : 
+                    color: selectedOption === 'Common' ? 'green' : 
                            selectedOption === 'Discovered' ? "#2096F3" : 
                            '#8a47ff',
                 },
@@ -83,7 +83,7 @@ function ParentWitWisdom({ onBack }) {
                     textType: tempEntry.textType || entry.textType, // Update textType
                     category: tempEntry.category || entry.category, // Update category
                     style: {
-                        color: tempEntry.textType === 'Common' ? '#ff6347' : 
+                        color: tempEntry.textType === 'Common' ? 'green' : 
                                tempEntry.textType === 'Discovered' ? "#2096F3" : 
                                '#8a47ff',
                     },
@@ -286,7 +286,7 @@ function ParentWitWisdom({ onBack }) {
                             storageKey="WitWisdomNotes"
                         />
                         <View>
-                            <View style={{ marginBottom: '2.5%' }}>
+                            <View style={{ position:'relative', bottom:'2%', marginBottom: '2.5%' }}>
                             <NotesDropdown
                                 onChange={(value) => handleDropdownChange(value, "Notes")}
                                 selectedOption={notesOption}

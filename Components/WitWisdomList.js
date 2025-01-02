@@ -24,7 +24,7 @@ function WitWisdomList({
                         case 'Discovered':
                             return '#2096F3';
                         case 'Common':
-                            return '#ff6347';
+                            return 'green';
                         default:
                             return '#000'; // Default to black
                     }
@@ -95,7 +95,7 @@ function WitWisdomList({
                                     </View>
                                     <View style={styles.radioGroup}>
                                         <RadioButton value="Common" />
-                                            <Text style={{ color:"#ff6347" }}>Common</Text>
+                                            <Text style={{ color:"green" }}>Common</Text>
                                     </View>
                                 </RadioButton.Group>
                                 </View>
@@ -113,7 +113,7 @@ function WitWisdomList({
                                     { color: getColorForTextType(entry.textType) } // Use dynamic color
                                 ]}
                                 >
-                                    {index + 1}. "{firstPart}" - {secondPart} {entry.category && `(${entry.category})`}
+                                    {index + 1}. "{firstPart}" {entry.category && `(${entry.category})`} - {secondPart}
                                 </Text>
 
                                 {/* Control Buttons */}

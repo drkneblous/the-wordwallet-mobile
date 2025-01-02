@@ -15,7 +15,7 @@ function FusionList({ fusions, onEditInit, onDelete, onEditSave, editingIndex, t
             case 'Discovered':
                 return '#2096F3';
             case 'Common':
-                return '#ff6347';
+                return 'green';
             default:
                 return 'black'; // Default color
         }
@@ -52,7 +52,7 @@ function FusionList({ fusions, onEditInit, onDelete, onEditSave, editingIndex, t
                                             </View>
                                             <View style={styles.radioButton}>
                                                 <RadioButton value="Common" />
-                                                <Text style={{ color: '#ff6347' }}>Commonn</Text>
+                                                <Text style={{ color: 'green' }}>Commonn</Text>
                                             </View>
                                         </RadioButton.Group>
                                     </View>
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
         color: 'white'
     },
     gap: {
-        width: 2, // Small gap between the "Edit" and "Delete" buttons
+        width: 5, // Small gap between the "Edit" and "Delete" buttons
     },
 });
 
