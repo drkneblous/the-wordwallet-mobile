@@ -1,24 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { RadioButton } from 'react-native-paper';  // For radio button component
 
-function FusionList({ fusions, onEditInit, onDelete, onEditSave, editingIndex, tempTerm, setTempTerm, selectedOption, setSelectedOption }) {
+function FusionList({ fusions, onEditInit, onDelete, onEditSave, editingIndex, tempTerm, setTempTerm, onTextTypeChange }) {
+    const [selectedTextType, setSelectedTextType] = useState("Create"); // Default Text Type
 
-    const handleOptionChange = (option) => {
-        setSelectedOption(option); // Change selected option and color of text
-    };
-
-    const getColorForOption = (option) => {
-        switch (option) {
-            case 'Create':
-                return '#8a47ff';
-            case 'Discovered':
-                return '#2096F3';
-            case 'Common':
-                return 'green';
-            default:
-                return 'black'; // Default color
-        }
+    const handleTextTypeChange = (newTextType) => {
+        setSelectedTextType(newTextType); // Update the selected Text Type for the editing fusion
+        onTextTypeChange(newTextType); // Propagate the change to the parent component
     };
 
     return (
@@ -27,35 +15,31 @@ function FusionList({ fusions, onEditInit, onDelete, onEditSave, editingIndex, t
                 data={fusions}
                 keyExtractor={(item) => item.id?.toString() || `${Math.random()}`} // Ensure unique keys
                 renderItem={({ item, index }) => {
-                    const textColor = getColorForOption(selectedOption); // Get the color for selected option
+                    const textColor = item.style?.color || 'black'; // Ensure that the color is applied correctly
                     return (
-                        <View style={styles.listItem}>
+                        <View key={item.id} style={styles.listItem}>
                             {editingIndex === index ? (
                                 <View style={styles.editContainer}>
-                                   <TextInput
+                                    {/* Radio buttons for Text Type selection */}
+                                    <View style={styles.radioGroup}>
+                                        {["Create", "Discovered", "Common"].map((type) => (
+                                            <View key={type} style={styles.radioContainer}>
+                                                <TouchableOpacity
+                                                    style={styles.radioButton}
+                                                    onPress={() => handleTextTypeChange(type)}
+                                                >
+                                                    <View style={[styles.radioInnerCircle, selectedTextType === type && styles.selectedRadio]} />
+                                                </TouchableOpacity>
+                                                <Text style={styles.radioLabel}>{type}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                    
+                                    <TextInput
                                         style={styles.input}
                                         value={tempTerm}
                                         onChangeText={setTempTerm}
                                     />
-                                    <View style={styles.radioButtonContainer}>
-                                        <RadioButton.Group
-                                            onValueChange={handleOptionChange}
-                                            value={selectedOption}
-                                        >
-                                            <View style={styles.radioButton}>
-                                                <RadioButton value="Create" />
-                                                <Text style={{ color: '#8a47ff' }}>Createe</Text>
-                                            </View>
-                                            <View style={styles.radioButton}>
-                                                <RadioButton value="Discovered" />
-                                                <Text style={{ color: '#2096F3' }}>Discoveredd</Text>
-                                            </View>
-                                            <View style={styles.radioButton}>
-                                                <RadioButton value="Common" />
-                                                <Text style={{ color: 'green' }}>Commonn</Text>
-                                            </View>
-                                        </RadioButton.Group>
-                                    </View>
                                     <Button title="Save" onPress={() => onEditSave(item.id)} />
                                 </View>
                             ) : (
@@ -123,18 +107,35 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         width: '100%',
     },
-    radioButtonContainer: {
-        flexDirection: 'column',
+    radioGroup: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         marginBottom: 10,
     },
-    radioButton: {
+    radioContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 5, 
     },
-    buttonContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    radioButton: {
+        height: 20,
+        width: 20,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: '#ccc',
+        marginRight: 5,
+    },
+    radioInnerCircle: {
+        height: 12,
+        width: 12,
+        borderRadius: 50,
+        backgroundColor: '#ccc',
+        margin: 3,
+    },
+    selectedRadio: {
+        backgroundColor: '#2096F3',
+    },
+    radioLabel: {
+        fontSize: 14,
     },
     editButton: {
         backgroundColor: "#2096F3",

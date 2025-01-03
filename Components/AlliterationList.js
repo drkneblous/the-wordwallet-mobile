@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
 function AlliterationList({ alliterations, onEditInit, onDelete, onEditSave, editingIndex, tempAlliteration, setTempAlliteration }) {
     return (

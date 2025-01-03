@@ -41,6 +41,8 @@ function ParentFusionForms({ onBack }) {
     const [lastSavedFusions, setLastSavedFusions] = useState([]);
     const lastSavedFusionsRef = useRef([]);
     const [notesDataLoaded, setNotesDataLoaded] = useState(false); // New state to track if notes are already loaded
+    const [selectedTextType, setSelectedTextType] = useState("Create"); // Default Text Type for new fusions
+
 
     const hasFusionChanged = () => {
         if (fusions.length !== lastSavedFusionsRef.current.length) {
@@ -118,40 +120,53 @@ function ParentFusionForms({ onBack }) {
         console.log('Fusions state updated:', fusions);
     }, [fusions]);
 
+
+    const handleTextTypeChange = (newTextType) => {
+        setSelectedTextType(newTextType);
+        // If editing an existing fusion, update it in the list
+        if (editingIndex !== null) {
+            const updatedFusions = [...fusions];
+            updatedFusions[editingIndex].textType = newTextType; // Assuming each fusion has a textType property
+            setFusions(updatedFusions);
+        }
+    };
+
+    const onEditInit = (index, text) => {
+        setEditingIndex(index);
+        setTempTerm(text);
+    };
+
     const onDelete = (id) => {
-        setFusions((prevFusions) => {
-            const updatedFusions = prevFusions.filter((fusion) => fusion.id !== id);
-            console.log('Deleted fusion with ID:', id, 'Updated fusions:', updatedFusions);
-            return updatedFusions;
-        });
+        const updatedFusions = fusions.filter(fusion => fusion.id !== id);
+        setFusions(updatedFusions);
     };
 
-    const onEditSave = (id, localSelectedOption) => {
-        setFusions((prevFusions) => {
-            const updatedFusions = prevFusions.map((fusion) =>
-                fusion.id === id ? { ...fusion, text: tempTerm, category: localSelectedOption } : fusion
-            );
-            console.log('Saved edits for fusion with ID:', id, 'Updated fusions:', updatedFusions);
-            return updatedFusions;
-        });
-        setEditingIndex(-1);
+    const onEditSave = (id) => {
+        const updatedFusions = [...fusions];
+        updatedFusions[editingIndex].text = tempTerm; // Save edited text
+        updatedFusions[editingIndex].textType = selectedTextType; // Save the new Text Type
+        updatedFusions[editingIndex].style.color = selectedTextType === 'Common'
+            ? 'green'
+            : selectedTextType === 'Discovered'
+            ? '#2096F3'
+            : '#8a47ff'; // Update color based on selected text type
+        setFusions(updatedFusions);
+        setEditingIndex(null); // Exit editing mode
         setTempTerm('');
-        // Do NOT update selectedOption here. This ensures the parent dropdown remains unchanged.
     };
 
-    
     const handleAddFusion = () => {
+        console.log("Adding new fusion with text type:", selectedTextType); // Debugging log
         if (newFusion.trim()) {
             const newFusionEntry = {
                 id: Date.now().toString(),
                 text: newFusion,
                 style: {
-                    color:
-                        selectedOption === 'Common'
-                            ? 'green'
-                            : selectedOption === 'Discovered'
-                            ? '#2096F3'
-                            : '#8a47ff',
+                    color: selectedTextType === 'Common'
+                        ? 'green'
+                        : selectedTextType === 'Discovered'
+                        ? '#2096F3'
+                        : '#8a47ff', // Default color for "Create"
                 },
                 category: selectedOption,
                 type: 'fusion',
@@ -175,30 +190,24 @@ function ParentFusionForms({ onBack }) {
 
     const handleDropdownChange = (value, dropdownType) => {
         console.log(`${dropdownType} Dropdown changed to:`, value);
-
+   
         if (dropdownType === "Notes") {
             setNotesOption(value);
-
             if (value !== "Null" && displayMode === "Notes") {
                 setTimeout(() => {
                     setDisplayMode("List");
                     setSelectedOption(value);
-                    console.log(
-                        "Reverting to List mode and syncing selectedOption with NotesDropdown selection:",
-                        value
-                    );
+                    setSelectedTextType(value);  // Update selectedTextType here
+                    console.log("Reverting to List mode and syncing selectedOption with NotesDropdown selection:", value);
                 }, 100);
             }
         } else if (dropdownType === "Device") {
             setSelectedOption(value);
-
+            setSelectedTextType(value);  // Update selectedTextType based on Device selection
             if (displayMode === "Notes") {
                 setTimeout(() => {
                     setNotesOption(value);
-                    console.log(
-                        "Syncing NotesDropdown with DeviceDropdown selection:",
-                        value
-                    );
+                    console.log("Syncing NotesDropdown with DeviceDropdown selection:", value);
                 }, 100);
             }
         }
@@ -250,21 +259,16 @@ function ParentFusionForms({ onBack }) {
                             bottom: '4.5%',
                         }}
                     >
-                        <FusionList 
-                            fusions={fusions}
-                            onEditInit={(index, term) => {
-                                setEditingIndex(index);
-                                setTempTerm(term);
-                                console.log('Editing fusion at index:', index, 'Term:', term);
-                            }}
-                            onDelete={onDelete}
-                            onEditSave={onEditSave}
-                            editingIndex={editingIndex}
-                            tempTerm={tempTerm}
-                            setTempTerm={setTempTerm}
-                            selectedOption={selectedOption}
-                            setSelectedOption={setSelectedOption}
-                        />
+                        <FusionList
+                        fusions={fusions}
+                        onEditInit={onEditInit}
+                        onEditSave={onEditSave}
+                        onDelete={onDelete}
+                        editingIndex={editingIndex}
+                        tempTerm={tempTerm}
+                        setTempTerm={setTempTerm}
+                        onTextTypeChange={handleTextTypeChange}
+                    />
                     </View>
 
                     <View style={{ position: 'relative', marginTop: '1.5%', bottom: '5%' }}>
@@ -349,7 +353,7 @@ function ParentFusionForms({ onBack }) {
                             selectedOption={notesOption}
                         />
                     </View>
-                    <View style={{ position:'relative', bottom:'1.75%', width: '50%', borderRadius: 50 }}>
+                    <View style={{ position:'relative', bottom:'1.85%', width: '50%', borderRadius: 50 }}>
                         <Button
                             onPress={handleSaveEditorContent}
                             title="Save Notes"

@@ -41,13 +41,13 @@ function ParentNicknames({ onBack }) {
     useEffect(() => {
         // Check if we're in 'Notes' mode and editorContent is not yet loaded
         if (displayMode === 'Notes' && !editorContent) {
-            loadStoredData('NicknameNotes')
+            loadStoredData('NicknamesNotes')
                 .then((data) => {
                     setEditorContent(data || ''); // Default to empty string if no data
-                    console.log('Data loaded for NicknameNotes:', data);
+                    console.log('Data loaded for NicknamesNotes:', data);
                 })
                 .catch((err) => {
-                    console.error('Error loading NicknameNotes:', err);
+                    console.error('Error loading NicknamesNotes:', err);
                     setEditorContent(''); // Ensure we handle errors gracefully
                 });
         }

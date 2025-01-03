@@ -264,7 +264,7 @@ function ParentTerms({ onBack }) {
                     <Text>Write down your terms notes and thoughts here</Text>
                 </View>
                     <DeviceQuill editorConent={editorContent} setEditorContent={setEditorContent} storageKey="TermsNotes" />
-                    <View style={{ marginBottom: '2.5%' }}> 
+                    <View style={{ position:'relative', bottom:'1%', marginBottom: '2.5%' }}> 
                         <NotesDropdown
                             onChange={(value) => handleDropdownChange(value, "Notes")}
                             selectedOption={notesOption}

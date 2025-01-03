@@ -265,7 +265,7 @@ function ParentAlliteration({ onBack }) {
                 </View>
                 <DeviceQuill editorContent={editorContent} setEditorContent={setEditorContent} storageKey="AlliterationNotes" />
                 <View >
-                    <View style={{ marginBottom: '2.5%', borderColor:'black', borderWidth:1 }}> 
+                    <View style={{ position:'relative', bottom:'2.5%', marginBottom: '2.5%', borderColor:'black', borderWidth:1 }}> 
                         <NotesDropdown
                             onChange={(value) => handleDropdownChange(value, "Notes")}
                             selectedOption={notesOption}
